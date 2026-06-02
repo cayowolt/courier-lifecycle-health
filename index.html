@@ -2,361 +2,506 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Courier Lifecycle Health Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
 <style>
-:root {
-  color-scheme: light;
-  --bg: #f8fafc;
-  --surface: #ffffff;
-  --border: #e2e8f0;
-  --text: #0f172a;
-  --muted: #64748b;
-  --green: #22c55e; --green-bg: #f0fdf4;
-  --amber: #f59e0b; --amber-bg: #fffbeb;
-  --red: #ef4444;   --red-bg: #fef2f2;
-  --blue: #3b82f6;
-  --radius: 12px;
-  --shadow: 0 1px 3px rgba(0,0,0,.07), 0 4px 12px rgba(0,0,0,.05);
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-       background: var(--bg); color: var(--text); min-height: 100vh; }
+:root{color-scheme:light;--bg:#f8fafc;--sf:#fff;--bd:#e2e8f0;--tx:#0f172a;--mu:#64748b;--gn:#22c55e;--gn2:#f0fdf4;--am:#f59e0b;--am2:#fffbeb;--rd:#ef4444;--rd2:#fef2f2;--bl:#3b82f6;--bl2:#eff6ff;--pu:#8b5cf6;--pu2:#f3e8ff;--r:12px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;font-size:14px}
+.hdr{background:var(--sf);border-bottom:1px solid var(--bd);padding:14px 28px;display:flex;align-items:center;gap:14px}
+.hdr-ic{width:36px;height:36px;background:var(--bl2);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.hdr h1{font-size:16px;font-weight:800}
+.hdr p{font-size:11px;color:var(--mu);margin-top:1px}
+.hdr-kpis{margin-left:auto;display:flex;gap:18px}
+.kpi{text-align:right}.kpi-v{font-size:18px;font-weight:800;line-height:1}.kpi-l{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.05em;margin-top:1px}
+.tabs{background:var(--sf);border-bottom:1px solid var(--bd);padding:0 28px;display:flex}
+.tab{padding:11px 16px;font-size:13px;font-weight:600;color:var(--mu);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;user-select:none}
+.tab:hover{color:var(--tx)}.tab.on{color:var(--bl);border-bottom-color:var(--bl)}
+.panel{display:none}.panel.on{display:block}
 
-/* HEADER */
-.header { background: var(--surface); border-bottom: 1px solid var(--border);
-          padding: 20px 28px; display: flex; align-items: center; gap: 16px; }
-.header-icon { width: 40px; height: 40px; background: #eff6ff; border-radius: 10px;
-               display: flex; align-items: center; justify-content: center; font-size: 20px; }
-.header h1 { font-size: 18px; font-weight: 700; }
-.header p  { font-size: 13px; color: var(--muted); margin-top: 2px; }
-.header-stats { margin-left: auto; display: flex; gap: 24px; }
-.stat { text-align: right; }
-.stat-val { font-size: 22px; font-weight: 700; }
-.stat-lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+/* GLOBAL */
+.gw{padding:20px 28px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.gc{background:var(--sf);border-radius:var(--r);border:1.5px solid var(--bd);padding:18px}
+.gc h3{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px}
+.fleet-score{font-size:50px;font-weight:900;line-height:1}
+.grade-pills{display:flex;gap:8px;margin-top:14px}
+.gp{flex:1;padding:10px;border-radius:8px;text-align:center}
+.gp-n{font-size:20px;font-weight:800}.gp-l{font-size:9px;font-weight:700;text-transform:uppercase;margin-top:1px}
+.stg-avgs{display:flex;gap:8px;margin-top:4px}
+.sac{flex:1;background:var(--bg);border-radius:8px;padding:10px;text-align:center}
+.sac-s{font-size:18px;font-weight:800}.sac-l{font-size:9px;color:var(--mu);margin-top:2px;font-weight:600}
+.pq-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--bd)}
+.pq-item:last-child{border-bottom:none}
+.pq-rank{width:20px;height:20px;border-radius:50%;background:var(--rd2);color:var(--rd);font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pq-body{flex:1}.pq-name{font-size:13px;font-weight:700}.pq-meta{font-size:10px;color:var(--mu)}
+.pq-right{text-align:right}.pq-s{font-size:16px;font-weight:800}.pq-w{font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;margin-top:2px;display:inline-block}
+.reg-row{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--bd);cursor:pointer;border-radius:6px;transition:background .1s}
+.reg-row:last-child{border-bottom:none}.reg-row:hover{background:var(--bg)}
+.reg-nm{width:130px;font-size:13px;font-weight:600}.reg-sc{width:32px;font-size:13px;font-weight:800;text-align:center}
+.reg-bars{flex:1;display:flex;gap:3px}.reg-bar{flex:1;height:6px;border-radius:3px}
+.reg-n{font-size:10px;color:var(--mu);width:56px;text-align:right}
+.hmw{padding:0 28px 24px;overflow-x:auto}
+.hm-title{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.07em;padding:14px 0 10px}
+table.hm{border-collapse:collapse;font-size:12px;width:100%}
+table.hm th{padding:6px 8px;font-size:10px;font-weight:700;color:var(--mu);background:var(--bg);text-align:center}
+table.hm th:first-child{text-align:left;width:120px}
+table.hm th:nth-child(2){width:110px}
+table.hm td{padding:5px 7px;text-align:center;font-size:11px;font-weight:700;border:1px solid #f1f5f9}
+table.hm td:first-child{text-align:left;font-weight:600;font-size:12px}
+table.hm td:nth-child(2){color:var(--mu);font-size:10px;font-weight:500}
+table.hm tr:hover td{opacity:.88}
 
-/* TOOLBAR */
-.toolbar { padding: 16px 28px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.filter-btn { padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border);
-              background: white; font-size: 13px; cursor: pointer; transition: all .15s; font-weight: 500; }
-.filter-btn:hover { border-color: #94a3b8; }
-.filter-btn.active { background: var(--text); color: white; border-color: var(--text); }
-.filter-btn.green  { border-color: var(--green); color: var(--green); }
-.filter-btn.green.active { background: var(--green); color: white; }
-.filter-btn.amber  { border-color: var(--amber); color: #b45309; }
-.filter-btn.amber.active { background: var(--amber); color: white; }
-.filter-btn.red    { border-color: var(--red); color: var(--red); }
-.filter-btn.red.active { background: var(--red); color: white; }
-.sort-select { margin-left: auto; padding: 6px 12px; border: 1.5px solid var(--border);
-               border-radius: 8px; font-size: 13px; background: white; cursor: pointer; }
+/* COUNTRIES */
+.tb{padding:12px 28px;display:flex;gap:7px;align-items:center;flex-wrap:wrap;background:var(--bg);border-bottom:1px solid var(--bd)}
+.chip{padding:4px 11px;border-radius:20px;border:1.5px solid var(--bd);background:var(--sf);font-size:11px;cursor:pointer;font-weight:700;white-space:nowrap;transition:all .15s}
+.chip:hover{border-color:#94a3b8}
+.chip.on{background:var(--tx);color:white;border-color:var(--tx)}
+.chip.cg{border-color:var(--gn);color:#15803d}.chip.cg.on{background:var(--gn);color:white}
+.chip.ca{border-color:var(--am);color:#92400e}.chip.ca.on{background:var(--am);color:white}
+.chip.cr{border-color:var(--rd);color:#991b1b}.chip.cr.on{background:var(--rd);color:white}
+.chip.cp{border-color:var(--pu);color:#6d28d9}.chip.cp.on{background:var(--pu);color:white}
+.sep{width:1px;height:22px;background:var(--bd);flex-shrink:0}
+.srt{margin-left:auto;padding:5px 9px;border:1.5px solid var(--bd);border-radius:7px;font-size:11px;background:var(--sf);cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));gap:11px;padding:18px 28px}
+.card{background:var(--sf);border-radius:var(--r);border:1.5px solid var(--bd);padding:15px 16px;cursor:pointer;transition:all .15s;position:relative}
+.card:hover{border-color:#94a3b8;box-shadow:0 2px 12px rgba(0,0,0,.07);transform:translateY(-1px)}
+.card.sel{border-color:var(--bl);box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+.c-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+.c-nm{font-weight:700;font-size:14px}.c-sub{font-size:10px;color:var(--mu);margin-top:1px}
+.sc-circ{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0}
+.stgs{display:flex;flex-direction:column;gap:5px}
+.sr{display:flex;align-items:center;gap:6px;font-size:11px}
+.sl{width:96px;color:var(--mu);flex-shrink:0}
+.sbw{flex:1;height:5px;background:#f1f5f9;border-radius:3px;overflow:hidden}
+.sb{height:100%;border-radius:3px}
+.sv{width:24px;text-align:right;font-weight:700;font-size:10px}
+.c-ft{margin-top:9px;display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.badge{padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700}
+.p-ring{position:absolute;top:-5px;right:-5px;width:17px;height:17px;border-radius:50%;background:var(--rd);color:white;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.no-res{grid-column:1/-1;text-align:center;padding:48px;color:var(--mu)}
 
-/* GRID */
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 14px; padding: 0 28px 28px; }
-.card { background: var(--surface); border-radius: var(--radius); border: 1.5px solid var(--border);
-        padding: 18px 20px; cursor: pointer; transition: all .15s; position: relative; }
-.card:hover { border-color: #94a3b8; box-shadow: var(--shadow); transform: translateY(-1px); }
-.card.selected { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
-.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-.card-country { font-weight: 700; font-size: 15px; }
-.card-cc { font-size: 11px; color: var(--muted); font-weight: 500; }
-.badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-.score-circle { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center;
-                justify-content: center; font-size: 17px; font-weight: 800; flex-shrink: 0; }
+/* DETAIL */
+.det{background:var(--sf);border-top:3px solid var(--bl);margin:0 28px 22px;border-radius:0 0 var(--r) var(--r);padding:22px;display:none}
+.det.on{display:block}
+.d-hdr{display:flex;align-items:flex-start;gap:16px;margin-bottom:18px}
+.d-title{flex:1}
+.d-title h2{font-size:19px;font-weight:800}
+.d-title p{font-size:11px;color:var(--mu);margin-top:3px}
+.d-tags{margin-top:7px;display:flex;gap:5px;flex-wrap:wrap}
+.d-sc{text-align:center;min-width:76px}
+.big-s{font-size:38px;font-weight:900;line-height:1}
+.big-l{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
+.cls-btn{background:none;border:1.5px solid var(--bd);border-radius:7px;padding:5px 11px;cursor:pointer;font-size:11px;color:var(--mu)}
+.cls-btn:hover{background:var(--bg)}
+.d-body{display:grid;grid-template-columns:210px 1fr;gap:18px}
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.dc{border-radius:9px;padding:13px}
+.dc h4{font-size:11px;font-weight:700;margin-bottom:7px;display:flex;align-items:center;gap:4px}
+.dc-s{font-size:24px;font-weight:800;line-height:1}
+.dc-m{margin-top:7px;display:flex;flex-direction:column;gap:3px}
+.dm{display:flex;justify-content:space-between;font-size:11px}
+.dm span:first-child{color:var(--mu)}.dm span:last-child{font-weight:600}
+.rx{background:#f8faff;border:1.5px solid #bfdbfe;border-radius:9px;padding:14px}
+.rx-hd{font-size:13px;font-weight:800;color:#1d4ed8;margin-bottom:5px}
+.rx-sub{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.05em;margin-top:10px;margin-bottom:3px}
+.rx-why{font-size:12px;line-height:1.65;color:#1e3a5f}
+.rx-acts{display:flex;flex-direction:column;gap:4px}
+.rx-act{font-size:12px;line-height:1.5;display:flex;gap:5px;color:#1e3a5f}
+.rx-act::before{content:"→";color:var(--bl);flex-shrink:0}
+.rx-mtr{font-size:11px;background:#dbeafe;border-radius:5px;padding:5px 9px;margin-top:8px;color:#1e40af;font-weight:500}
+.str-t{background:var(--gn2);color:#15803d;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px}
+.wk-t{background:var(--rd2);color:#b91c1c;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px}
+.reg-t{background:var(--pu2);color:#7c3aed;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px}
+.pri-t{background:var(--rd2);color:#dc2626;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px}
+.d-pos{font-size:9px;color:var(--gn);font-weight:700}
+.d-neg{font-size:9px;color:var(--rd);font-weight:700}
 
-/* Stage bars */
-.stages { display: flex; flex-direction: column; gap: 7px; margin-top: 4px; }
-.stage-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
-.stage-label { width: 108px; color: var(--muted); flex-shrink: 0; }
-.stage-bar-wrap { flex: 1; height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden; }
-.stage-bar { height: 100%; border-radius: 3px; transition: width .4s ease; }
-.stage-val { width: 28px; text-align: right; font-weight: 600; font-size: 11px; }
-
-/* DETAIL PANEL */
-.detail-panel { background: var(--surface); border-top: 2px solid var(--blue);
-                margin: 0 28px 28px; border-radius: 0 0 var(--radius) var(--radius);
-                padding: 28px; display: none; }
-.detail-panel.open { display: block; }
-.detail-header { display: flex; align-items: flex-start; gap: 20px; margin-bottom: 24px; }
-.detail-title { flex: 1; }
-.detail-title h2 { font-size: 22px; font-weight: 800; }
-.detail-title p  { font-size: 13px; color: var(--muted); margin-top: 4px; }
-.detail-grade { text-align: center; }
-.big-score { font-size: 42px; font-weight: 900; line-height: 1; }
-.big-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; }
-
-.detail-body { display: grid; grid-template-columns: 260px 1fr; gap: 24px; }
-.radar-wrap { position: relative; }
-
-/* Diagnosis cards */
-.diag-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.diag-card { border-radius: 10px; padding: 16px; }
-.diag-card h4 { font-size: 13px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
-.diag-score-big { font-size: 28px; font-weight: 800; line-height: 1; }
-.diag-metrics { margin-top: 10px; display: flex; flex-direction: column; gap: 5px; }
-.diag-metric { display: flex; justify-content: space-between; font-size: 12px; }
-.diag-metric span:first-child { color: var(--muted); }
-.diag-metric span:last-child  { font-weight: 600; }
-
-/* Prescription */
-.rx-box { margin-top: 20px; background: #eff6ff; border-left: 4px solid var(--blue);
-          border-radius: 0 8px 8px 0; padding: 14px 16px; }
-.rx-box h4 { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 6px; display: flex; gap: 6px; align-items: center; }
-.rx-box p { font-size: 13px; line-height: 1.6; color: #1e3a5f; }
-.strength-tag { display: inline-flex; align-items: center; gap: 4px; background: var(--green-bg);
-                color: #15803d; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; margin-right: 6px; }
-.weakness-tag { display: inline-flex; align-items: center; gap: 4px; background: var(--red-bg);
-                color: #dc2626; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
-
-.close-btn { background: none; border: 1.5px solid var(--border); border-radius: 8px;
-             padding: 6px 14px; cursor: pointer; font-size: 13px; color: var(--muted); }
-.close-btn:hover { background: var(--bg); }
-
-.no-results { grid-column: 1/-1; text-align: center; padding: 48px; color: var(--muted); }
+/* FAQ */
+.fw{padding:20px 28px;max-width:860px}
+.fs{margin-bottom:28px}
+.fs h2{font-size:15px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.fq{background:var(--sf);border:1.5px solid var(--bd);border-radius:9px;margin-bottom:7px;overflow:hidden}
+.fq-h{padding:12px 14px;cursor:pointer;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:space-between;user-select:none}
+.fq-h:hover{background:var(--bg)}
+.fq-h .arr{transition:transform .2s;font-size:11px;color:var(--mu)}
+.fq-b{padding:0 14px;font-size:12px;line-height:1.7;color:#334155;max-height:0;overflow:hidden;transition:max-height .35s ease,padding .2s}
+.fq.op .fq-b{max-height:800px;padding:0 14px 14px}
+.fq.op .arr{transform:rotate(180deg)}
+.stbl{width:100%;border-collapse:collapse;font-size:11px;margin-top:6px}
+.stbl th{background:var(--bg);padding:5px 8px;text-align:left;font-weight:700;border-bottom:1.5px solid var(--bd)}
+.stbl td{padding:5px 8px;border-bottom:1px solid var(--bd)}
+.stbl tr:last-child td{border-bottom:none}
+code{background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:11px}
 </style>
 </head>
 <body>
-
-<div class="header">
-  <div class="header-icon">🩺</div>
+<div class="hdr">
+  <div class="hdr-ic">🩺</div>
   <div>
     <h1>Courier Lifecycle Health Dashboard</h1>
-    <p id="subtitle">AI diagnosis across Onboarding → FTD → Nurture → Retention · Last 90 days</p>
+    <p>AI diagnosis: Onboarding → FTD → Nurture → Retention · Last 90-day cohorts</p>
   </div>
-  <div class="header-stats" id="header-stats"></div>
+  <div class="hdr-kpis" id="hdr-kpis"></div>
+</div>
+<div class="tabs">
+  <div class="tab on" onclick="switchTab('global',this)">🌍 Global</div>
+  <div class="tab" onclick="switchTab('countries',this)">🗺 Countries</div>
+  <div class="tab" onclick="switchTab('faq',this)">❓ FAQ</div>
 </div>
 
-<div class="toolbar">
-  <button class="filter-btn active" onclick="setFilter('all',this)">All countries</button>
-  <button class="filter-btn green"  onclick="setFilter('Healthy',this)">🟢 Healthy</button>
-  <button class="filter-btn amber"  onclick="setFilter('At Risk',this)">🟡 At Risk</button>
-  <button class="filter-btn red"    onclick="setFilter('Critical',this)">🔴 Critical</button>
-  <select class="sort-select" onchange="setSort(this.value)">
-    <option value="health_desc">Sort: Health ↓</option>
-    <option value="health_asc">Sort: Health ↑</option>
-    <option value="name_asc">Sort: Country A-Z</option>
-    <option value="ftd_desc">Sort: FTD score ↓</option>
-    <option value="churn_desc">Sort: Retention score ↓</option>
-  </select>
+<!-- GLOBAL -->
+<div class="panel on" id="tab-global">
+  <div class="gw">
+    <div class="gc">
+      <h3>🏥 Fleet Health Score</h3>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:4px">
+        <div class="fleet-score" id="gfs"></div>
+        <div style="flex:1">
+          <div id="gfl" style="font-size:13px;font-weight:700;margin-bottom:4px"></div>
+          <div style="height:8px;background:#f1f5f9;border-radius:4px;overflow:hidden">
+            <div style="width:100%;height:100%;background:linear-gradient(90deg,var(--rd) 0%,var(--am) 50%,var(--gn) 100%)"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--mu);margin-top:2px"><span>0</span><span>50</span><span>100</span></div>
+          <div id="gfm" style="font-size:10px;color:var(--mu);margin-top:4px"></div>
+        </div>
+      </div>
+      <div class="grade-pills" id="ggp"></div>
+      <div style="margin-top:14px">
+        <div style="font-size:10px;color:var(--mu);font-weight:700;margin-bottom:7px;text-transform:uppercase;letter-spacing:.05em">Fleet avg by stage</div>
+        <div class="stg-avgs" id="gsa"></div>
+      </div>
+    </div>
+    <div class="gc">
+      <h3>🚨 CRM Priority Queue <span style="font-size:10px;font-weight:400;color:var(--mu)">(largest unhealthy fleets first)</span></h3>
+      <div id="gpq"></div>
+    </div>
+    <div class="gc" style="grid-column:1/-1">
+      <h3>🗺 Region Health Overview <span style="font-size:10px;font-weight:400;color:var(--mu)">— click a region to filter the Countries tab</span></h3>
+      <div id="greg"></div>
+    </div>
+  </div>
+  <div class="hmw">
+    <div class="hm-title">📊 Country × Stage Heatmap — full fleet at a glance</div>
+    <table class="hm" id="hmt"></table>
+  </div>
 </div>
 
-<div class="grid" id="country-grid"></div>
+<!-- COUNTRIES -->
+<div class="panel" id="tab-countries">
+  <div class="tb" id="tb"></div>
+  <div class="grid" id="cgrid"></div>
+  <div class="det" id="dtp"></div>
+</div>
 
-<div class="detail-panel" id="detail-panel">
-  <div class="detail-header">
-    <div class="detail-title">
-      <h2 id="dp-name"></h2>
-      <p id="dp-sub"></p>
-      <div style="margin-top:10px" id="dp-tags"></div>
+<!-- FAQ -->
+<div class="panel" id="tab-faq">
+  <div class="fw">
+    <div class="fs">
+      <h2>📐 How the Health Score Works</h2>
+      <div class="fq op"><div class="fq-h" onclick="tfq(this)">What is the Health Score? <span class="arr">▼</span></div>
+        <div class="fq-b">The Health Score (0–100) is a weighted composite of four lifecycle stage scores, each worth 25% of the total. It functions like a medical check-up: <b>75+ = Healthy</b>, <b>50–74 = At Risk</b>, <b>&lt;50 = Critical</b>. No country currently scores above 75 — the fleet is broadly at risk, with FTD activation and retention as the primary pressure points.</div>
+      </div>
+      <div class="fq"><div class="fq-h" onclick="tfq(this)">How is the Onboarding score calculated? <span class="arr">▼</span></div>
+        <div class="fq-b">The Onboarding score combines two sub-scores weighted equally:<br><br>
+          <b>Ready-to-deliver rate</b> — % of applicants reaching "ready" status. Scored 0 at 10% and 100 at 65%.<br><br>
+          <b>Speed score</b> — average calendar days from application to first delivery. Scored 100 at 30 days and 0 at 500+ days. Lower is better.<br><br>
+          <table class="stbl"><tr><th>Days app→FTD</th><th>Speed score</th><th>Signal</th></tr>
+          <tr><td>&lt;60 days</td><td>84–100</td><td>Fast-track pipeline</td></tr>
+          <tr><td>60–120 days</td><td>68–84</td><td>Average friction</td></tr>
+          <tr><td>120–300 days</td><td>43–68</td><td>Significant bottleneck</td></tr>
+          <tr><td>&gt;300 days</td><td>0–43</td><td>Critical — pipeline is broken</td></tr></table>
+        </div>
+      </div>
+      <div class="fq"><div class="fq-h" onclick="tfq(this)">How is the FTD Activation score calculated? <span class="arr">▼</span></div>
+        <div class="fq-b">
+          <b>FTD conversion rate (60% weight)</b> — % of all applicants who complete at least one delivery. Scored 0 at 0% and 100 at 55%.<br><br>
+          <b>7-day activation rate (40% weight)</b> — among couriers who delivered, the % still active 7 days after FTD. Scored 0 at 0% and 100 at 95%.<br><br>
+          The 7-day window is deliberate: couriers who do not re-deliver within 7 days of FTD have a 60–80% lower lifetime delivery volume.
+        </div>
+      </div>
+      <div class="fq"><div class="fq-h" onclick="tfq(this)">How is the Nurture score calculated? <span class="arr">▼</span></div>
+        <div class="fq-b">
+          <b>30-day retention after FTD (50% weight)</b> — % of FTD couriers still active 30 days later. Scored 0 at 40% and 100 at 100%.<br><br>
+          <b>Average active hours/30d (30% weight)</b> — from courier CRM events joined with fleet metrics. Scored 0 at 0h and 100 at 80h. Fleet average is <b id="faqh"></b>h.<br><br>
+          <b>CRM conversion rate (20% weight)</b> — % of CRM opens leading to a conversion. This signal is currently weak (Intercom data lacks lifecycle stage tags). It will improve when Iterable campaign metadata is properly mapped.
+        </div>
+      </div>
+      <div class="fq"><div class="fq-h" onclick="tfq(this)">How is the Retention score calculated? <span class="arr">▼</span></div>
+        <div class="fq-b">
+          Based on <code>CAPITAL_OKR_AGGREGATED_COURIER_CHURN</code>, averaged over the last 6 months of data (up to Aug 2025):<br><br>
+          <b>Monthly churn rate (70% weight)</b> — % of active base churning each month. Scored 100 at 2% and 0 at 20%.<br><br>
+          <b>New-courier dependency (30% weight)</b> — share of active couriers who are first-timers. High share = the retained base is shrinking. Scored 100 at 3% and 0 at 20%.<br><br>
+          <table class="stbl"><tr><th>Monthly churn</th><th>Retention score</th><th>Signal</th></tr>
+          <tr><td>&lt;6%</td><td>70–100</td><td>Stable fleet</td></tr>
+          <tr><td>6–10%</td><td>40–70</td><td>Manageable, needs watching</td></tr>
+          <tr><td>10–15%</td><td>15–40</td><td>High replacement cost</td></tr>
+          <tr><td>&gt;15%</td><td>0–15</td><td>Critical — unsustainable</td></tr></table>
+        </div>
+      </div>
     </div>
-    <div class="detail-grade">
-      <div class="big-score" id="dp-score"></div>
-      <div class="big-label" id="dp-label"></div>
-      <div style="margin-top:8px; font-size:11px; color:var(--muted)">Health Score</div>
+    <div class="fs">
+      <h2>📊 Metric Definitions</h2>
+      <div class="fq"><div class="fq-h" onclick="tfq(this)">What is "% ready-to-deliver"? <span class="arr">▼</span></div>
+        <div class="fq-b">% of couriers in the last-90-day application cohort who have reached "ready" status — all verification steps completed and eligible to receive tasks. Does not mean they have delivered. Source: <code>COURIER_ONBOARDING_COHORT.IS_READY</code>.</div>
+      </div>
+      <div class="fq"><div class="fq-h" onclick="tfq(this)">What is "FTD conversion rate"? <span class="arr">▼</span></div>
+        <div class="fq-b">First-Time Delivery conversion — % of all applicants in the cohort who completed at least one delivery (<code>HAS_DELIVERED = TRUE</code>). Measured against the total applicant pool, not just "ready" couriers — making it a true end-to-end funnel metric.</div>
+      </div>
+      <div class="fq"><div class="fq-h" onclick="tfq(this)">What is "Avg active hrs/30d"? <span class="arr">▼</span></div>
+        <div class="fq-b">Average on-duty hours per courier per 30 days, from CRM engagement events joined with <code>COURIER_PARTNER_METRICS</code>. This measures actual working time, not just app opens. Fleet average is <b id="faqh2"></b>h/30d.</div>
+      </div>
+      <div class="fq"><div class="fq-h" onclick="tfq(this)">What is "Monthly churn rate"? <span class="arr">▼</span></div>
+        <div class="fq-b">Net % of the active courier base that churned in a given month, averaged over the last 6 months. Source: <code>CAPITAL_OKR_AGGREGATED_COURIER_CHURN.COURIER_CHURN_NET</code>. This is net churn — it accounts for reactivations within the period.</div>
+      </div>
+      <div class="fq"><div class="fq-h" onclick="tfq(this)">How is the CRM Priority Queue ranked? <span class="arr">▼</span></div>
+        <div class="fq-b">Countries are ranked by urgency score:<br><br>
+          <code>urgency = (100 − health_score) × ln(total_applicants)</code><br><br>
+          This multiplies how unhealthy a country is by the log of its applicant base. A country with health=30 and 20,000 applicants ranks above health=25 with 300 applicants — because fixing a large unhealthy market delivers greater absolute ROI per campaign spent.
+        </div>
+      </div>
     </div>
-    <button class="close-btn" onclick="closeDetail()">✕ Close</button>
-  </div>
-  <div class="detail-body">
-    <div class="radar-wrap">
-      <canvas id="radarChart" width="240" height="240"></canvas>
-    </div>
-    <div>
-      <div class="diag-grid" id="dp-diag-grid"></div>
-      <div class="rx-box">
-        <h4>💊 Recommended Treatment</h4>
-        <p id="dp-treatment"></p>
+    <div class="fs">
+      <h2>⚠️ Data Limitations & Next Steps</h2>
+      <div class="fq op"><div class="fq-h" onclick="tfq(this)">Known limitations of this dashboard <span class="arr">▼</span></div>
+        <div class="fq-b">
+          <b>Cohort window bias:</b> The 90-day cohort penalises countries where onboarding legally takes longer (e.g. Austria, Iceland). These countries have many in-progress applications not yet reflected in FTD rate.<br><br>
+          <b>Churn data recency:</b> Churn data runs to Aug 2025. Countries without coverage default to a neutral score of 50.<br><br>
+          <b>CRM attribution:</b> The nurture CRM conversion signal is currently weak — Intercom message titles don't reliably identify courier lifecycle stage. Mapping Iterable <code>lifecycle_stage</code> metadata would resolve this.<br><br>
+          <b>No standalone reactivation metric:</b> True reactivation success rate (couriers who churned and returned) is not yet a distinct stage. It's partially captured in net churn.<br><br>
+          <b>Equal stage weights:</b> All four stages carry 25%. These weights can be adjusted to reflect quarterly strategic priorities.
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-const DATA = [{"cc": "MLT", "name": "Malta", "health": 74, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 83, "FTD Activation": 89, "Nurture": 67, "Retention": 57}, "metrics": {"pct_ready": 56.5, "pct_ftd": 49.8, "avg_days_to_ftd": 119.4, "pct_active_7d": 80.6, "pct_active_30d": 97.4, "avg_active_hrs": 50.1, "monthly_churn_pct": 9.4, "new_courier_share": 11.1, "crm_conversion": 0.0, "total_applicants": 1252}, "strongest": "FTD Activation", "weakest": "Retention", "treatment": "Launch proactive reactivation: identify couriers silent >14d, target with personalised comeback offer before churn."}, {"cc": "DEU", "name": "Germany", "health": 73, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 87, "FTD Activation": 90, "Nurture": 61, "Retention": 55}, "metrics": {"pct_ready": 54.8, "pct_ftd": 47.2, "avg_days_to_ftd": 63.5, "pct_active_7d": 91.4, "pct_active_30d": 99.8, "avg_active_hrs": 18.7, "monthly_churn_pct": 10.4, "new_courier_share": 9.9, "crm_conversion": 0.42, "total_applicants": 7946}, "strongest": "FTD Activation", "weakest": "Retention", "treatment": "Launch proactive reactivation: identify couriers silent >14d, target with personalised comeback offer before churn."}, {"cc": "SRB", "name": "Serbia", "health": 72, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 78, "FTD Activation": 81, "Nurture": 62, "Retention": 67}, "metrics": {"pct_ready": 52.6, "pct_ftd": 42.1, "avg_days_to_ftd": 123.3, "pct_active_7d": 81.7, "pct_active_30d": 97.2, "avg_active_hrs": 38.1, "monthly_churn_pct": 8.7, "new_courier_share": 7.0, "crm_conversion": 0.0, "total_applicants": 3267}, "strongest": "FTD Activation", "weakest": "Nurture", "treatment": "Increase shift uptake frequency: behavioural push at low-duty times, earnings milestone messages, peer comparisons."}, {"cc": "CYP", "name": "Cyprus", "health": 69, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 68, "FTD Activation": 76, "Nurture": 66, "Retention": 66}, "metrics": {"pct_ready": 44.3, "pct_ftd": 41.1, "avg_days_to_ftd": 156.0, "pct_active_7d": 74.5, "pct_active_30d": 96.1, "avg_active_hrs": 49.4, "monthly_churn_pct": 8.4, "new_courier_share": 8.1, "crm_conversion": 0.0, "total_applicants": 2400}, "strongest": "FTD Activation", "weakest": "Nurture", "treatment": "Increase shift uptake frequency: behavioural push at low-duty times, earnings milestone messages, peer comparisons."}, {"cc": "ALB", "name": "Albania", "health": 67, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 87, "FTD Activation": 94, "Nurture": 66, "Retention": 22}, "metrics": {"pct_ready": 52.6, "pct_ftd": 49.3, "avg_days_to_ftd": 43.7, "pct_active_7d": 94.5, "pct_active_30d": 99.3, "avg_active_hrs": 43.9, "monthly_churn_pct": 14.8, "new_courier_share": 19.1, "crm_conversion": 0.0, "total_applicants": 1147}, "strongest": "FTD Activation", "weakest": "Retention", "treatment": "Launch proactive reactivation: identify couriers silent >14d, target with personalised comeback offer before churn."}, {"cc": "ROU", "name": "Romania", "health": 66, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 90, "FTD Activation": 89, "Nurture": 61, "Retention": 25}, "metrics": {"pct_ready": 63.8, "pct_ftd": 49.2, "avg_days_to_ftd": 109.0, "pct_active_7d": 85.1, "pct_active_30d": 97.2, "avg_active_hrs": 35.0, "monthly_churn_pct": 13.5, "new_courier_share": 38.5, "crm_conversion": 0.0, "total_applicants": 4696}, "strongest": "Onboarding", "weakest": "Retention", "treatment": "Launch proactive reactivation: identify couriers silent >14d, target with personalised comeback offer before churn."}, {"cc": "AZE", "name": "Azerbaijan", "health": 64, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 78, "FTD Activation": 69, "Nurture": 59, "Retention": 50}, "metrics": {"pct_ready": 50.7, "pct_ftd": 30.9, "avg_days_to_ftd": 117.9, "pct_active_7d": 83.4, "pct_active_30d": 97.0, "avg_active_hrs": 30.5, "monthly_churn_pct": 11.9, "new_courier_share": 9.6, "crm_conversion": 0.01, "total_applicants": 8825}, "strongest": "Onboarding", "weakest": "Retention", "treatment": "Launch proactive reactivation: identify couriers silent >14d, target with personalised comeback offer before churn."}, {"cc": "XKX", "name": "Kosovo", "health": 62, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 95, "FTD Activation": 96, "Nurture": 58, "Retention": 0}, "metrics": {"pct_ready": 61.9, "pct_ftd": 52.3, "avg_days_to_ftd": 49.4, "pct_active_7d": 92.5, "pct_active_30d": 99.8, "avg_active_hrs": 22.5, "monthly_churn_pct": 29.4, "new_courier_share": 37.8, "crm_conversion": 0.0, "total_applicants": 916}, "strongest": "FTD Activation", "weakest": "Retention", "treatment": "Launch proactive reactivation: identify couriers silent >14d, target with personalised comeback offer before churn."}, {"cc": "HRV", "name": "Croatia", "health": 60, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 52, "FTD Activation": 57, "Nurture": 68, "Retention": 65}, "metrics": {"pct_ready": 31.5, "pct_ftd": 27.7, "avg_days_to_ftd": 192.3, "pct_active_7d": 65.0, "pct_active_30d": 96.0, "avg_active_hrs": 54.6, "monthly_churn_pct": 9.3, "new_courier_share": 6.5, "crm_conversion": 0.13, "total_applicants": 1529}, "strongest": "Nurture", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "GRC", "name": "Greece", "health": 57, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 40, "FTD Activation": 51, "Nurture": 59, "Retention": 78}, "metrics": {"pct_ready": 31.1, "pct_ftd": 27.3, "avg_days_to_ftd": 308.0, "pct_active_7d": 49.8, "pct_active_30d": 90.2, "avg_active_hrs": 45.4, "monthly_churn_pct": 6.2, "new_courier_share": 6.6, "crm_conversion": 0.03, "total_applicants": 7515}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "GEO", "name": "Georgia", "health": 57, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 42, "FTD Activation": 49, "Nurture": 64, "Retention": 72}, "metrics": {"pct_ready": 28.1, "pct_ftd": 24.8, "avg_days_to_ftd": 260.4, "pct_active_7d": 53.4, "pct_active_30d": 94.2, "avg_active_hrs": 47.2, "monthly_churn_pct": 8.2, "new_courier_share": 5.3, "crm_conversion": 0.1, "total_applicants": 5067}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "LTU", "name": "Lithuania", "health": 56, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 44, "FTD Activation": 47, "Nurture": 58, "Retention": 76}, "metrics": {"pct_ready": 31.7, "pct_ftd": 23.9, "avg_days_to_ftd": 269.5, "pct_active_7d": 50.3, "pct_active_30d": 91.9, "avg_active_hrs": 34.4, "monthly_churn_pct": 8.1, "new_courier_share": 2.9, "crm_conversion": 0.11, "total_applicants": 1865}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "EST", "name": "Estonia", "health": 55, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 50, "FTD Activation": 38, "Nurture": 52, "Retention": 80}, "metrics": {"pct_ready": 42.3, "pct_ftd": 21.0, "avg_days_to_ftd": 304.0, "pct_active_7d": 37.4, "pct_active_30d": 91.7, "avg_active_hrs": 20.6, "monthly_churn_pct": 7.3, "new_courier_share": 2.3, "crm_conversion": 0.1, "total_applicants": 2355}, "strongest": "Retention", "weakest": "FTD Activation", "treatment": "Boost first-delivery triggers: send shift-slot reminders within 48h of ready status, test incentive for first task."}, {"cc": "POL", "name": "Poland", "health": 53, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 60, "FTD Activation": 55, "Nurture": 45, "Retention": 51}, "metrics": {"pct_ready": 58.6, "pct_ftd": 28.9, "avg_days_to_ftd": 344.8, "pct_active_7d": 54.0, "pct_active_30d": 83.6, "avg_active_hrs": 23.4, "monthly_churn_pct": 14.2, "new_courier_share": 4.0, "crm_conversion": 0.01, "total_applicants": 8830}, "strongest": "Onboarding", "weakest": "Nurture", "treatment": "Increase shift uptake frequency: behavioural push at low-duty times, earnings milestone messages, peer comparisons."}, {"cc": "BGR", "name": "Bulgaria", "health": 51, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 52, "FTD Activation": 57, "Nurture": 46, "Retention": 50}, "metrics": {"pct_ready": 33.9, "pct_ftd": 27.1, "avg_days_to_ftd": 207.7, "pct_active_7d": 66.6, "pct_active_30d": 92.9, "avg_active_hrs": 4.7, "monthly_churn_pct": 0.0, "new_courier_share": 0.0, "crm_conversion": 0.0, "total_applicants": 1346}, "strongest": "FTD Activation", "weakest": "Nurture", "treatment": "Increase shift uptake frequency: behavioural push at low-duty times, earnings milestone messages, peer comparisons."}, {"cc": "LVA", "name": "Latvia", "health": 50, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 28, "FTD Activation": 37, "Nurture": 50, "Retention": 84}, "metrics": {"pct_ready": 26.5, "pct_ftd": 19.9, "avg_days_to_ftd": 379.5, "pct_active_7d": 36.3, "pct_active_30d": 87.4, "avg_active_hrs": 25.2, "monthly_churn_pct": 6.2, "new_courier_share": 0.8, "crm_conversion": 0.11, "total_applicants": 1356}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "CZE", "name": "Czechia", "health": 49, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 40, "FTD Activation": 43, "Nurture": 54, "Retention": 58}, "metrics": {"pct_ready": 37.5, "pct_ftd": 24.4, "avg_days_to_ftd": 360.9, "pct_active_7d": 39.5, "pct_active_30d": 87.3, "avg_active_hrs": 35.2, "monthly_churn_pct": 10.2, "new_courier_share": 8.6, "crm_conversion": 0.1, "total_applicants": 6346}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "KAZ", "name": "Kazakhstan", "health": 46, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 60, "FTD Activation": 61, "Nurture": 64, "Retention": 0}, "metrics": {"pct_ready": 31.3, "pct_ftd": 24.7, "avg_days_to_ftd": 123.3, "pct_active_7d": 81.9, "pct_active_30d": 96.8, "avg_active_hrs": 42.8, "monthly_churn_pct": 21.5, "new_courier_share": 21.8, "crm_conversion": 0.1, "total_applicants": 22957}, "strongest": "Nurture", "weakest": "Retention", "treatment": "Launch proactive reactivation: identify couriers silent >14d, target with personalised comeback offer before churn."}, {"cc": "HUN", "name": "Hungary", "health": 46, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 29, "FTD Activation": 37, "Nurture": 55, "Retention": 62}, "metrics": {"pct_ready": 29.1, "pct_ftd": 21.6, "avg_days_to_ftd": 389.6, "pct_active_7d": 31.5, "pct_active_30d": 86.8, "avg_active_hrs": 39.6, "monthly_churn_pct": 8.8, "new_courier_share": 9.3, "crm_conversion": 0.11, "total_applicants": 6949}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "FIN", "name": "Finland", "health": 46, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 12, "FTD Activation": 17, "Nurture": 62, "Retention": 94}, "metrics": {"pct_ready": 6.1, "pct_ftd": 6.0, "avg_days_to_ftd": 380.2, "pct_active_7d": 26.1, "pct_active_30d": 88.7, "avg_active_hrs": 58.1, "monthly_churn_pct": 3.6, "new_courier_share": 2.7, "crm_conversion": 0.0, "total_applicants": 5467}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "SVN", "name": "Slovenia", "health": 45, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 32, "FTD Activation": 35, "Nurture": 50, "Retention": 64}, "metrics": {"pct_ready": 36.4, "pct_ftd": 24.9, "avg_days_to_ftd": 431.7, "pct_active_7d": 18.8, "pct_active_30d": 85.9, "avg_active_hrs": 27.5, "monthly_churn_pct": 8.6, "new_courier_share": 8.8, "crm_conversion": 0.09, "total_applicants": 1287}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "SVK", "name": "Slovakia", "health": 45, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 28, "FTD Activation": 34, "Nurture": 48, "Retention": 70}, "metrics": {"pct_ready": 29.9, "pct_ftd": 17.7, "avg_days_to_ftd": 410.3, "pct_active_7d": 35.2, "pct_active_30d": 81.4, "avg_active_hrs": 34.5, "monthly_churn_pct": 8.2, "new_courier_share": 6.5, "crm_conversion": 0.05, "total_applicants": 2490}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "LUX", "name": "Luxembourg", "health": 44, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 18, "FTD Activation": 19, "Nurture": 54, "Retention": 86}, "metrics": {"pct_ready": 1.7, "pct_ftd": 0.9, "avg_days_to_ftd": 327.4, "pct_active_7d": 42.9, "pct_active_30d": 100.0, "avg_active_hrs": 12.3, "monthly_churn_pct": 5.3, "new_courier_share": 3.7, "crm_conversion": 0.0, "total_applicants": 786}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "DNK", "name": "Denmark", "health": 40, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 19, "FTD Activation": 29, "Nurture": 45, "Retention": 68}, "metrics": {"pct_ready": 29.0, "pct_ftd": 15.1, "avg_days_to_ftd": 485.9, "pct_active_7d": 31.7, "pct_active_30d": 77.6, "avg_active_hrs": 32.1, "monthly_churn_pct": 9.2, "new_courier_share": 5.3, "crm_conversion": 0.15, "total_applicants": 5539}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "MKD", "name": "N. Macedonia", "health": 38, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 42, "FTD Activation": 52, "Nurture": 59, "Retention": 0}, "metrics": {"pct_ready": 26.2, "pct_ftd": 23.1, "avg_days_to_ftd": 246.9, "pct_active_7d": 63.4, "pct_active_30d": 91.0, "avg_active_hrs": 37.5, "monthly_churn_pct": 25.8, "new_courier_share": 25.2, "crm_conversion": 0.29, "total_applicants": 2072}, "strongest": "Nurture", "weakest": "Retention", "treatment": "Launch proactive reactivation: identify couriers silent >14d, target with personalised comeback offer before churn."}, {"cc": "ISR", "name": "Israel", "health": 38, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 6, "FTD Activation": 21, "Nurture": 50, "Retention": 76}, "metrics": {"pct_ready": 16.5, "pct_ftd": 12.2, "avg_days_to_ftd": 536.5, "pct_active_7d": 19.0, "pct_active_30d": 75.2, "avg_active_hrs": 52.5, "monthly_churn_pct": 6.9, "new_courier_share": 6.0, "crm_conversion": 0.06, "total_applicants": 13069}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "NOR", "name": "Norway", "health": 36, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 8, "FTD Activation": 19, "Nurture": 42, "Retention": 73}, "metrics": {"pct_ready": 19.0, "pct_ftd": 10.8, "avg_days_to_ftd": 542.6, "pct_active_7d": 16.4, "pct_active_30d": 75.0, "avg_active_hrs": 31.1, "monthly_churn_pct": 8.2, "new_courier_share": 4.8, "crm_conversion": 0.11, "total_applicants": 2821}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "SWE", "name": "Sweden", "health": 34, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 11, "FTD Activation": 17, "Nurture": 38, "Retention": 72}, "metrics": {"pct_ready": 22.2, "pct_ftd": 11.5, "avg_days_to_ftd": 549.4, "pct_active_7d": 11.2, "pct_active_30d": 76.7, "avg_active_hrs": 19.4, "monthly_churn_pct": 8.4, "new_courier_share": 4.9, "crm_conversion": 0.08, "total_applicants": 3258}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "ISL", "name": "Iceland", "health": 27, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 0, "FTD Activation": 8, "Nurture": 29, "Retention": 70}, "metrics": {"pct_ready": 3.7, "pct_ftd": 2.1, "avg_days_to_ftd": 0, "pct_active_7d": 12.5, "pct_active_30d": 50.0, "avg_active_hrs": 52.9, "monthly_churn_pct": 9.4, "new_courier_share": 3.6, "crm_conversion": 0.05, "total_applicants": 379}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "AUT", "name": "Austria", "health": 19, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 0, "FTD Activation": 6, "Nurture": 8, "Retention": 62}, "metrics": {"pct_ready": 7.1, "pct_ftd": 3.4, "avg_days_to_ftd": 0, "pct_active_7d": 5.0, "pct_active_30d": 40.0, "avg_active_hrs": 16.3, "monthly_churn_pct": 8.5, "new_courier_share": 10.5, "crm_conversion": 0.15, "total_applicants": 1782}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}];
+const RAW=JSON.parse(document.getElementById('__data__').textContent);
+const D=RAW.countries,FLEET=RAW.fleet,PRIORITY=RAW.priority,REGIONS=RAW.regions;
+const SI={'Onboarding':'🚀','FTD Activation':'🎯','Nurture':'🌱','Retention':'🔒'};
+const ALL_REGS=[...new Set(D.map(c=>c.region))].sort();
+let gF='all',rF='all',sM='health_desc',selCC=null,rInst=null;
 
-const STAGE_ICONS = {
-  'Onboarding':'🚀','FTD Activation':'🎯','Nurture':'🌱','Retention':'🔒'
-};
-const STAGE_METRICS = {
-  'Onboarding': [
-    ['Ready-to-deliver rate','pct_ready','%'],
-    ['Avg days app → FTD','avg_days_to_ftd','d'],
-  ],
-  'FTD Activation': [
-    ['FTD conversion rate','pct_ftd','%'],
-    ['Active 7d after FTD','pct_active_7d','%'],
-  ],
-  'Nurture': [
-    ['Active 30d after FTD','pct_active_30d','%'],
-    ['Avg active hrs / 30d','avg_active_hrs','h'],
-  ],
-  'Retention': [
-    ['Monthly churn rate','monthly_churn_pct','%'],
-    ['New courier share','new_courier_share','%'],
-  ],
-};
-
-let currentFilter = 'all';
-let currentSort   = 'health_desc';
-let selectedCC    = null;
-let radarChartInst = null;
-
-function stageColor(s) {
-  if (s >= 75) return '#22c55e';
-  if (s >= 50) return '#f59e0b';
-  return '#ef4444';
-}
-function gradeBg(s) {
-  if (s >= 75) return '#f0fdf4';
-  if (s >= 50) return '#fffbeb';
-  return '#fef2f2';
+function sc(v){return v>=75?'#22c55e':v>=50?'#f59e0b':'#ef4444'}
+function sbg(v){return v>=75?'#f0fdf4':v>=50?'#fffbeb':'#fef2f2'}
+function hc(v){
+  if(v>=75)return{bg:'#bbf7d0',tx:'#14532d'};
+  if(v>=60)return{bg:'#fef08a',tx:'#713f12'};
+  if(v>=45)return{bg:'#fed7aa',tx:'#7c2d12'};
+  return{bg:'#fecaca',tx:'#7f1d1d'};
 }
 
-function renderHeaderStats() {
-  const healthy  = DATA.filter(d=>d.health>=75).length;
-  const atRisk   = DATA.filter(d=>d.health>=50&&d.health<75).length;
-  const critical = DATA.filter(d=>d.health<50).length;
-  const avg = Math.round(DATA.reduce((s,d)=>s+d.health,0)/DATA.length);
-  document.getElementById('header-stats').innerHTML = `
-    <div class="stat"><div class="stat-val" style="color:var(--green)">${healthy}</div><div class="stat-lbl">Healthy</div></div>
-    <div class="stat"><div class="stat-val" style="color:var(--amber)">${atRisk}</div><div class="stat-lbl">At Risk</div></div>
-    <div class="stat"><div class="stat-val" style="color:var(--red)">${critical}</div><div class="stat-lbl">Critical</div></div>
-    <div class="stat"><div class="stat-val">${avg}</div><div class="stat-lbl">Avg Score</div></div>
-  `;
+function switchTab(n,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.getElementById('tab-'+n).classList.add('on');
 }
 
-function sortedFiltered() {
-  let d = [...DATA];
-  if (currentFilter !== 'all') d = d.filter(x=>x.grade.label===currentFilter);
-  const key = currentSort;
+function renderHeader(){
+  document.getElementById('hdr-kpis').innerHTML=`
+    <div class="kpi"><div class="kpi-v" style="color:#f59e0b">${FLEET.avg_health}</div><div class="kpi-l">Fleet Score</div></div>
+    <div class="kpi"><div class="kpi-v" style="color:#ef4444">${FLEET.n_critical}</div><div class="kpi-l">Critical</div></div>
+    <div class="kpi"><div class="kpi-v" style="color:#f59e0b">${FLEET.n_at_risk}</div><div class="kpi-l">At Risk</div></div>
+    <div class="kpi"><div class="kpi-v">${FLEET.avg_ftd}%</div><div class="kpi-l">Avg FTD</div></div>
+    <div class="kpi"><div class="kpi-v">${FLEET.avg_churn}%</div><div class="kpi-l">Avg Churn/mo</div></div>`;
+  ['faqh','faqh2'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=FLEET.avg_active_hrs;});
+}
+
+function renderGlobal(){
+  document.getElementById('gfs').textContent=FLEET.avg_health;
+  document.getElementById('gfs').style.color=sc(FLEET.avg_health);
+  document.getElementById('gfl').textContent=FLEET.avg_health>=75?'Healthy Fleet':FLEET.avg_health>=50?'Fleet At Risk':'Fleet Critical';
+  document.getElementById('gfl').style.color=sc(FLEET.avg_health);
+  document.getElementById('gfm').textContent=`${FLEET.n_countries} countries · avg churn ${FLEET.avg_churn}%/mo · avg FTD ${FLEET.avg_ftd}%`;
+  document.getElementById('ggp').innerHTML=`
+    <div class="gp" style="background:#f0fdf4"><div class="gp-n" style="color:#16a34a">${FLEET.n_healthy}</div><div class="gp-l" style="color:#16a34a">Healthy</div></div>
+    <div class="gp" style="background:#fffbeb"><div class="gp-n" style="color:#d97706">${FLEET.n_at_risk}</div><div class="gp-l" style="color:#d97706">At Risk</div></div>
+    <div class="gp" style="background:#fef2f2"><div class="gp-n" style="color:#dc2626">${FLEET.n_critical}</div><div class="gp-l" style="color:#dc2626">Critical</div></div>`;
+  const stgA={};
+  ['Onboarding','FTD Activation','Nurture','Retention'].forEach(s=>{stgA[s]=Math.round(D.reduce((a,c)=>a+c.scores[s],0)/D.length);});
+  document.getElementById('gsa').innerHTML=Object.entries(stgA).map(([s,v])=>`
+    <div class="sac"><div class="sac-s" style="color:${sc(v)}">${v}</div><div class="sac-l">${SI[s]} ${s}</div></div>`).join('');
+  document.getElementById('gpq').innerHTML=PRIORITY.map((cc,i)=>{
+    const c=D.find(d=>d.cc===cc);
+    return`<div class="pq-item">
+      <div class="pq-rank">${i+1}</div>
+      <div class="pq-body"><div class="pq-name">${c.name} <span style="color:var(--mu);font-weight:400;font-size:10px">${cc}</span></div>
+        <div class="pq-meta">${c.metrics.total_applicants.toLocaleString()} applicants · ${c.region}</div></div>
+      <div class="pq-right"><div class="pq-s" style="color:${sc(c.health)}">${c.health}</div>
+        <span class="pq-w" style="background:${sbg(20)};color:#b91c1c">⚠ ${c.weakest}</span></div>
+    </div>`; }).join('');
+  document.getElementById('greg').innerHTML=`
+    <div style="display:flex;gap:8px;font-size:9px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px;padding:0 4px">
+      <span style="width:130px">Region</span><span style="width:32px;text-align:center">Score</span>
+      <span style="flex:1">Stages (Onb / FTD / Nrt / Ret)</span><span style="width:56px;text-align:right">Countries</span>
+    </div>
+    ${Object.entries(REGIONS).sort((a,b)=>b[1].avg_health-a[1].avg_health).map(([reg,rd])=>`
+    <div class="reg-row" onclick="goRegion('${reg}')">
+      <div class="reg-nm">${reg}</div>
+      <div class="reg-sc" style="color:${sc(rd.avg_health)}">${rd.avg_health}</div>
+      <div class="reg-bars">${Object.entries(rd.stages).map(([s,v])=>`<div class="reg-bar" style="background:${sc(v)}" title="${s}: ${v}"></div>`).join('')}</div>
+      <div class="reg-n">${rd.n} countries</div>
+    </div>`).join('')}`;
+  renderHeatmap();
+}
+
+function goRegion(reg){
+  rF=reg;gF='all';
+  switchTab('countries',document.querySelectorAll('.tab')[1]);
+  renderToolbar();closeDetail();renderGrid();
+}
+
+function renderHeatmap(){
+  const stgs=['Onboarding','FTD Activation','Nurture','Retention'];
+  const srt=[...D].sort((a,b)=>a.region.localeCompare(b.region)||b.health-a.health);
+  document.getElementById('hmt').innerHTML=
+    `<thead><tr><th>Country</th><th>Region</th><th>Health</th>${stgs.map(s=>`<th>${SI[s]} ${s}</th>`).join('')}</tr></thead>
+     <tbody>${srt.map(c=>{
+       const h=hc(c.health);
+       return`<tr><td>${c.name}</td><td style="color:var(--mu);font-size:10px">${c.region}</td>
+         <td style="background:${h.bg};color:${h.tx};font-weight:800">${c.health}</td>
+         ${stgs.map(s=>{const cl=hc(c.scores[s]);return`<td style="background:${cl.bg};color:${cl.tx}">${c.scores[s]}</td>`;}).join('')}
+       </tr>`;}).join('')}</tbody>`;
+}
+
+function renderToolbar(){
+  const gcArr=[{l:'All',v:'all',c:''},{l:'🟢 Healthy',v:'Healthy',c:'cg'},{l:'🟡 At Risk',v:'At Risk',c:'ca'},{l:'🔴 Critical',v:'Critical',c:'cr'}];
+  document.getElementById('tb').innerHTML=
+    gcArr.map(ch=>`<button class="chip ${ch.c}${gF===ch.v&&rF==='all'?' on':''}" onclick="setGF('${ch.v}')">${ch.l}</button>`).join('')+
+    `<div class="sep"></div>`+
+    ALL_REGS.map(r=>`<button class="chip cp${rF===r?' on':''}" onclick="setRF('${r}')">${r}</button>`).join('')+
+    `<select class="srt" onchange="sM=this.value;renderGrid()">
+      <option value="health_desc">Sort: Health ↓</option>
+      <option value="health_asc">Sort: Health ↑</option>
+      <option value="name_asc">Sort: Country A–Z</option>
+      <option value="ftd_desc">Sort: FTD ↓</option>
+      <option value="churn_desc">Sort: Retention ↓</option>
+    </select>`;
+}
+
+function setGF(v){gF=v;rF='all';renderToolbar();closeDetail();renderGrid();}
+function setRF(v){rF=v;gF='all';renderToolbar();closeDetail();renderGrid();}
+
+function filtered(){
+  let d=[...D];
+  if(gF!=='all') d=d.filter(c=>c.grade.label===gF);
+  if(rF!=='all') d=d.filter(c=>c.region===rF);
   d.sort((a,b)=>{
-    if (key==='health_desc') return b.health-a.health;
-    if (key==='health_asc')  return a.health-b.health;
-    if (key==='name_asc')    return a.name.localeCompare(b.name);
-    if (key==='ftd_desc')    return b.scores['FTD Activation']-a.scores['FTD Activation'];
-    if (key==='churn_desc')  return b.scores['Retention']-a.scores['Retention'];
-    return 0;
-  });
+    if(sM==='health_desc') return b.health-a.health;
+    if(sM==='health_asc')  return a.health-b.health;
+    if(sM==='name_asc')    return a.name.localeCompare(b.name);
+    if(sM==='ftd_desc')    return b.scores['FTD Activation']-a.scores['FTD Activation'];
+    if(sM==='churn_desc')  return b.scores.Retention-a.scores.Retention;
+    return 0;});
   return d;
 }
 
-function renderGrid() {
-  const grid = document.getElementById('country-grid');
-  const items = sortedFiltered();
-  if (!items.length) {
-    grid.innerHTML = '<div class="no-results">No countries match this filter.</div>';
-    return;
-  }
-  grid.innerHTML = items.map(c => {
-    const stagesHtml = Object.entries(c.scores).map(([name,val])=>`
-      <div class="stage-row">
-        <span class="stage-label">${STAGE_ICONS[name]} ${name}</span>
-        <div class="stage-bar-wrap"><div class="stage-bar" style="width:${val}%;background:${stageColor(val)}"></div></div>
-        <span class="stage-val" style="color:${stageColor(val)}">${val}</span>
-      </div>`).join('');
-    const isSelected = c.cc === selectedCC;
-    return `
-      <div class="card${isSelected?' selected':''}" onclick="selectCountry('${c.cc}')" id="card-${c.cc}">
-        <div class="card-header">
-          <div>
-            <div class="card-country">${c.name}</div>
-            <div class="card-cc">${c.cc} · ${c.metrics.total_applicants.toLocaleString()} applicants</div>
-          </div>
-          <div class="score-circle" style="background:${gradeBg(c.health)};color:${c.grade.color}">${c.health}</div>
-        </div>
-        <div class="stages">${stagesHtml}</div>
-        <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap">
-          <span class="badge" style="background:${c.grade.bg};color:${c.grade.color}">${c.grade.label}</span>
-          <span style="font-size:11px;color:var(--muted);align-self:center">⚡ ${c.strongest}</span>
-          <span style="font-size:11px;color:#dc2626;align-self:center">⚠ ${c.weakest}</span>
-        </div>
-      </div>`;
-  }).join('');
+function renderGrid(){
+  const items=filtered(),g=document.getElementById('cgrid');
+  if(!items.length){g.innerHTML='<div class="no-res">No countries match this filter.</div>';return;}
+  g.innerHTML=items.map(c=>{
+    const pr=PRIORITY.indexOf(c.cc)+1;
+    return`<div class="card${c.cc===selCC?' sel':''}" id="card-${c.cc}" onclick="selCard('${c.cc}')">
+      ${pr>0?`<div class="p-ring" title="Priority #${pr}">${pr}</div>`:''}
+      <div class="c-hdr">
+        <div><div class="c-nm">${c.name}</div><div class="c-sub">${c.cc} · ${c.region} · ${c.metrics.total_applicants.toLocaleString()} applicants</div></div>
+        <div class="sc-circ" style="background:${sbg(c.health)};color:${sc(c.health)}">${c.health}</div>
+      </div>
+      <div class="stgs">${Object.entries(c.scores).map(([s,v])=>`
+        <div class="sr"><span class="sl">${SI[s]} ${s}</span>
+          <div class="sbw"><div class="sb" style="width:${v}%;background:${sc(v)}"></div></div>
+          <span class="sv" style="color:${sc(v)}">${v}</span></div>`).join('')}</div>
+      <div class="c-ft">
+        <span class="badge" style="background:${sbg(c.health)};color:${sc(c.health)}">${c.grade.label}</span>
+        <span style="font-size:10px;color:var(--mu)">⚡ ${c.strongest}</span>
+        <span style="font-size:10px;color:#dc2626">⚠ ${c.weakest}</span>
+      </div>
+    </div>`;}).join('');
 }
 
-function selectCountry(cc) {
-  if (selectedCC === cc) { closeDetail(); return; }
-  selectedCC = cc;
-  renderGrid();
-  renderDetail(DATA.find(d=>d.cc===cc));
-  document.getElementById('detail-panel').scrollIntoView({behavior:'smooth',block:'nearest'});
+function selCard(cc){
+  if(selCC===cc){closeDetail();return;}
+  selCC=cc;renderGrid();
+  renderDetail(D.find(c=>c.cc===cc));
+  setTimeout(()=>document.getElementById('dtp').scrollIntoView({behavior:'smooth',block:'nearest'}),50);
 }
 
-function closeDetail() {
-  selectedCC = null;
-  document.getElementById('detail-panel').classList.remove('open');
+function closeDetail(){
+  selCC=null;
+  const dp=document.getElementById('dtp');
+  dp.classList.remove('on');dp.innerHTML='';
   renderGrid();
 }
 
-function renderDetail(c) {
-  const panel = document.getElementById('detail-panel');
-  panel.classList.add('open');
-
-  document.getElementById('dp-name').textContent = c.name;
-  document.getElementById('dp-sub').textContent =
-    `${c.metrics.total_applicants.toLocaleString()} applicants · ${c.metrics.avg_active_hrs}h avg active hrs/30d`;
-  document.getElementById('dp-score').textContent = c.health;
-  document.getElementById('dp-score').style.color = c.grade.color;
-  document.getElementById('dp-label').textContent = c.grade.label;
-  document.getElementById('dp-label').style.color = c.grade.color;
-  document.getElementById('dp-tags').innerHTML = `
-    <span class="strength-tag">✓ Strength: ${c.strongest}</span>
-    <span class="weakness-tag">✗ Weakness: ${c.weakest}</span>`;
-  document.getElementById('dp-treatment').textContent = c.treatment;
-
-  // Diagnosis cards
-  const diagHtml = Object.entries(c.scores).map(([stage, val])=>{
-    const metrics = STAGE_METRICS[stage].map(([lbl,key,unit])=>`
-      <div class="diag-metric">
-        <span>${lbl}</span>
-        <span>${c.metrics[key] != null ? c.metrics[key]+unit : '—'}</span>
-      </div>`).join('');
-    return `
-      <div class="diag-card" style="background:${gradeBg(val)}">
-        <h4 style="color:${stageColor(val)}">${STAGE_ICONS[stage]} ${stage}</h4>
-        <div class="diag-score-big" style="color:${stageColor(val)}">${val}<span style="font-size:14px;font-weight:500;color:var(--muted)">/100</span></div>
-        <div class="diag-metrics">${metrics}</div>
-      </div>`;
-  }).join('');
-  document.getElementById('dp-diag-grid').innerHTML = diagHtml;
-
-  // Radar chart
-  if (radarChartInst) radarChartInst.destroy();
-  const ctx = document.getElementById('radarChart').getContext('2d');
-  radarChartInst = new Chart(ctx, {
-    type: 'radar',
-    data: {
-      labels: Object.keys(c.scores),
-      datasets: [{
-        data: Object.values(c.scores),
-        backgroundColor: 'rgba(59,130,246,.15)',
-        borderColor: '#3b82f6',
-        borderWidth: 2,
-        pointBackgroundColor: Object.values(c.scores).map(stageColor),
-        pointRadius: 5,
-      }]
+function renderDetail(c){
+  const dp=document.getElementById('dtp');dp.classList.add('on');
+  const vf=c.vs_fleet;
+  const delta=(v,pos)=>v===0?'':` <span class="${v>0===pos?'d-pos':'d-neg'}">${v>0?'+':''}${v}</span>`;
+  const t=c.treatment_full;
+  const mDef={
+    'Onboarding':[['Ready-to-deliver','pct_ready','%'],['Avg days → FTD','avg_days_to_ftd','d']],
+    'FTD Activation':[['FTD conversion','pct_ftd','%'],['Active 7d after FTD','pct_active_7d','%']],
+    'Nurture':[['Active 30d after FTD','pct_active_30d','%'],['Avg active hrs/30d','avg_active_hrs','h']],
+    'Retention':[['Monthly churn','monthly_churn_pct','%'],['New courier share','new_courier_share','%']],
+  };
+  dp.innerHTML=`
+    <div class="d-hdr">
+      <div class="d-title">
+        <h2>${c.name}</h2>
+        <p>${c.metrics.total_applicants.toLocaleString()} applicants · ${c.metrics.avg_active_hrs}h active hrs/30d · ${c.metrics.monthly_churn_pct}% churn/mo</p>
+        <div class="d-tags">
+          <span class="reg-t">📍 ${c.region}</span>
+          <span class="str-t">✓ Strength: ${c.strongest}</span>
+          <span class="wk-t">✗ Needs work: ${c.weakest}</span>
+          ${PRIORITY.includes(c.cc)?`<span class="pri-t">🚨 Priority #${PRIORITY.indexOf(c.cc)+1}</span>`:''}
+        </div>
+      </div>
+      <div class="d-sc">
+        <div class="big-s" style="color:${sc(c.health)}">${c.health}</div>
+        <div class="big-l" style="color:${sc(c.health)}">${c.grade.label}</div>
+        <div style="font-size:9px;color:var(--mu);margin-top:3px">Fleet avg: ${FLEET.avg_health}${delta(vf.health,true)}</div>
+      </div>
+      <button class="cls-btn" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="d-body">
+      <canvas id="rc" width="200" height="200"></canvas>
+      <div>
+        <div class="dg">${Object.entries(c.scores).map(([stage,val])=>`
+          <div class="dc" style="background:${sbg(val)}">
+            <h4 style="color:${sc(val)}">${SI[stage]} ${stage}</h4>
+            <div class="dc-s" style="color:${sc(val)}">${val}<span style="font-size:11px;font-weight:500;color:var(--mu)">/100</span></div>
+            <div class="dc-m">${mDef[stage].map(([l,k,u])=>`<div class="dm"><span>${l}</span><span>${c.metrics[k]!=null?c.metrics[k]+u:'—'}</span></div>`).join('')}</div>
+          </div>`).join('')}</div>
+        <div class="rx">
+          <div class="rx-hd">💊 ${t.headline}</div>
+          <div class="rx-sub">Why this matters</div>
+          <div class="rx-why">${t.why}</div>
+          <div class="rx-sub">Recommended actions</div>
+          <div class="rx-acts">${t.actions.map(a=>`<div class="rx-act">${a}</div>`).join('')}</div>
+          <div class="rx-mtr">🎯 ${t.metric_note}</div>
+        </div>
+      </div>
+    </div>`;
+  if(rInst)rInst.destroy();
+  rInst=new Chart(document.getElementById('rc').getContext('2d'),{
+    type:'radar',
+    data:{
+      labels:Object.keys(c.scores),
+      datasets:[
+        {label:c.name,data:Object.values(c.scores),backgroundColor:'rgba(59,130,246,.12)',borderColor:'#3b82f6',borderWidth:2,pointBackgroundColor:Object.values(c.scores).map(sc),pointRadius:4},
+        {label:'Fleet avg',data:Object.keys(c.scores).map(s=>Math.round(D.reduce((a,d)=>a+d.scores[s],0)/D.length)),backgroundColor:'rgba(100,116,139,.05)',borderColor:'#94a3b8',borderWidth:1.5,borderDash:[4,3],pointRadius:3,pointBackgroundColor:'#94a3b8'},
+      ]
     },
-    options: {
-      responsive: false,
-      scales: { r: { min:0, max:100, ticks:{ stepSize:25, font:{size:10} },
-                     pointLabels:{ font:{size:12,weight:'600'} } } },
-      plugins: { legend:{ display:false } }
-    }
+    options:{responsive:false,scales:{r:{min:0,max:100,ticks:{stepSize:25,font:{size:8}},pointLabels:{font:{size:10,weight:'600'}}}},plugins:{legend:{display:true,position:'bottom',labels:{font:{size:9},boxWidth:10}}}}
   });
 }
 
-function setFilter(f, btn) {
-  currentFilter = f;
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  closeDetail();
-  renderGrid();
-}
+function tfq(el){el.closest('.fq').classList.toggle('op');}
 
-function setSort(v) { currentSort = v; renderGrid(); }
-
-renderHeaderStats();
-renderGrid();
+renderHeader();renderGlobal();renderToolbar();renderGrid();
 </script>
+<script type="application/json" id="__data__">{"countries": [{"cc": "MLT", "name": "Malta", "health": 74, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 83, "FTD Activation": 89, "Nurture": 67, "Retention": 57}, "metrics": {"pct_ready": 56.5, "pct_ftd": 49.8, "avg_days_to_ftd": 119.4, "pct_active_7d": 80.6, "pct_active_30d": 97.4, "avg_active_hrs": 50.1, "monthly_churn_pct": 9.4, "new_courier_share": 11.1, "crm_conversion": 0.0, "total_applicants": 1252}, "strongest": "FTD Activation", "weakest": "Retention", "treatment": "Launch proactive reactivation: identify couriers silent >14d, target with personalised comeback offer before churn.", "region": "Mediterranean", "treatment_full": {"headline": "Stop the bleed: reactivate lapsing couriers before they churn", "why": "Replacing a churned courier costs 3-5x more than retaining one (acquisition spend, onboarding time, lower early-stage productivity). A monthly churn rate above 7% means the active base is replacing itself faster than it is growing — delivery quality suffers and supply reliability deteriorates. High new-courier share (>15%) compounds the problem: a fleet of newcomers has lower acceptance rates and longer delivery times.", "actions": ["Define \"at-risk\" as any courier with 14+ days of inactivity who was previously active — run a targeted comeback campaign before the 21-day mark.", "Add a 30-second exit survey for couriers who go silent — segment churn reasons (earnings, flexibility, app experience, competing work) to prioritise fixes.", "Build a comeback campaign with a personalised incentive based on the courier's historical peak earnings day.", "Introduce a loyalty tier programme (Bronze / Silver / Gold based on lifetime deliveries) to increase switching costs and recognise tenure.", "Analyse churn timing: couriers churning in month 1 (failed expectation) need a different treatment than those churning in month 6 (earnings plateau)."], "metric_note": "Focus metric: Monthly churn rate (target <6%). Secondary: % of churned couriers reactivated within 30 days of lapsing."}, "vs_fleet": {"health": 23, "active_hrs": 15.6, "churn": -0.9}, "urgency": 185}, {"cc": "DEU", "name": "Germany", "health": 73, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 87, "FTD Activation": 90, "Nurture": 61, "Retention": 55}, "metrics": {"pct_ready": 54.8, "pct_ftd": 47.2, "avg_days_to_ftd": 63.5, "pct_active_7d": 91.4, "pct_active_30d": 99.8, "avg_active_hrs": 18.7, "monthly_churn_pct": 10.4, "new_courier_share": 9.9, "crm_conversion": 0.42, "total_applicants": 7946}, "strongest": "FTD Activation", "weakest": "Retention", "treatment": "Launch proactive reactivation: identify couriers silent >14d, target with personalised comeback offer before churn.", "region": "DACH", "treatment_full": {"headline": "Stop the bleed: reactivate lapsing couriers before they churn", "why": "Replacing a churned courier costs 3-5x more than retaining one (acquisition spend, onboarding time, lower early-stage productivity). A monthly churn rate above 7% means the active base is replacing itself faster than it is growing — delivery quality suffers and supply reliability deteriorates. High new-courier share (>15%) compounds the problem: a fleet of newcomers has lower acceptance rates and longer delivery times.", "actions": ["Define \"at-risk\" as any courier with 14+ days of inactivity who was previously active — run a targeted comeback campaign before the 21-day mark.", "Add a 30-second exit survey for couriers who go silent — segment churn reasons (earnings, flexibility, app experience, competing work) to prioritise fixes.", "Build a comeback campaign with a personalised incentive based on the courier's historical peak earnings day.", "Introduce a loyalty tier programme (Bronze / Silver / Gold based on lifetime deliveries) to increase switching costs and recognise tenure.", "Analyse churn timing: couriers churning in month 1 (failed expectation) need a different treatment than those churning in month 6 (earnings plateau)."], "metric_note": "Focus metric: Monthly churn rate (target <6%). Secondary: % of churned couriers reactivated within 30 days of lapsing."}, "vs_fleet": {"health": 22, "active_hrs": -15.8, "churn": 0.1}, "urgency": 242}, {"cc": "SRB", "name": "Serbia", "health": 72, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 78, "FTD Activation": 81, "Nurture": 62, "Retention": 67}, "metrics": {"pct_ready": 52.6, "pct_ftd": 42.1, "avg_days_to_ftd": 123.3, "pct_active_7d": 81.7, "pct_active_30d": 97.2, "avg_active_hrs": 38.1, "monthly_churn_pct": 8.7, "new_courier_share": 7.0, "crm_conversion": 0.0, "total_applicants": 3267}, "strongest": "FTD Activation", "weakest": "Nurture", "treatment": "Increase shift uptake frequency: behavioural push at low-duty times, earnings milestone messages, peer comparisons.", "region": "Balkans", "treatment_full": {"headline": "Build the habit: increase shift uptake frequency in months 1-3", "why": "Couriers with fewer than 20 active hours per month in their second month have 4x higher churn by month 6. The nurture stage is about converting a one-time delivery into a sustainable habit. Low active hours often signal low earnings satisfaction, lack of shift visibility, or competing priorities — all addressable through targeted CRM.", "actions": ["Introduce an earnings streak programme: couriers who complete shifts 3 weeks in a row unlock a bonus — streaks dramatically increase weekly shift commitment.", "Send personalised earnings benchmarks monthly: show what top couriers in the city earned and how many more hours it took.", "Trigger a re-engagement push whenever a courier misses an entire week of shifts — do not wait for 14 days.", "Test weekly shift bundles: allow couriers to pre-claim a full week of shifts in one tap to increase commitment and reduce last-minute no-shows.", "Segment by vehicle type and time-of-day preference — a bicycle courier has different availability patterns than a car courier."], "metric_note": "Focus metric: Average active hours per courier per 30 days (target >40h). Secondary: % of FTD couriers still active at 90 days."}, "vs_fleet": {"health": 21, "active_hrs": 3.6, "churn": -1.6}, "urgency": 227}, {"cc": "CYP", "name": "Cyprus", "health": 69, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 68, "FTD Activation": 76, "Nurture": 66, "Retention": 66}, "metrics": {"pct_ready": 44.3, "pct_ftd": 41.1, "avg_days_to_ftd": 156.0, "pct_active_7d": 74.5, "pct_active_30d": 96.1, "avg_active_hrs": 49.4, "monthly_churn_pct": 8.4, "new_courier_share": 8.1, "crm_conversion": 0.0, "total_applicants": 2400}, "strongest": "FTD Activation", "weakest": "Nurture", "treatment": "Increase shift uptake frequency: behavioural push at low-duty times, earnings milestone messages, peer comparisons.", "region": "Mediterranean", "treatment_full": {"headline": "Build the habit: increase shift uptake frequency in months 1-3", "why": "Couriers with fewer than 20 active hours per month in their second month have 4x higher churn by month 6. The nurture stage is about converting a one-time delivery into a sustainable habit. Low active hours often signal low earnings satisfaction, lack of shift visibility, or competing priorities — all addressable through targeted CRM.", "actions": ["Introduce an earnings streak programme: couriers who complete shifts 3 weeks in a row unlock a bonus — streaks dramatically increase weekly shift commitment.", "Send personalised earnings benchmarks monthly: show what top couriers in the city earned and how many more hours it took.", "Trigger a re-engagement push whenever a courier misses an entire week of shifts — do not wait for 14 days.", "Test weekly shift bundles: allow couriers to pre-claim a full week of shifts in one tap to increase commitment and reduce last-minute no-shows.", "Segment by vehicle type and time-of-day preference — a bicycle courier has different availability patterns than a car courier."], "metric_note": "Focus metric: Average active hours per courier per 30 days (target >40h). Secondary: % of FTD couriers still active at 90 days."}, "vs_fleet": {"health": 18, "active_hrs": 14.9, "churn": -1.9}, "urgency": 241}, {"cc": "ALB", "name": "Albania", "health": 67, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 87, "FTD Activation": 94, "Nurture": 66, "Retention": 22}, "metrics": {"pct_ready": 52.6, "pct_ftd": 49.3, "avg_days_to_ftd": 43.7, "pct_active_7d": 94.5, "pct_active_30d": 99.3, "avg_active_hrs": 43.9, "monthly_churn_pct": 14.8, "new_courier_share": 19.1, "crm_conversion": 0.0, "total_applicants": 1147}, "strongest": "FTD Activation", "weakest": "Retention", "treatment": "Launch proactive reactivation: identify couriers silent >14d, target with personalised comeback offer before churn.", "region": "Balkans", "treatment_full": {"headline": "Stop the bleed: reactivate lapsing couriers before they churn", "why": "Replacing a churned courier costs 3-5x more than retaining one (acquisition spend, onboarding time, lower early-stage productivity). A monthly churn rate above 7% means the active base is replacing itself faster than it is growing — delivery quality suffers and supply reliability deteriorates. High new-courier share (>15%) compounds the problem: a fleet of newcomers has lower acceptance rates and longer delivery times.", "actions": ["Define \"at-risk\" as any courier with 14+ days of inactivity who was previously active — run a targeted comeback campaign before the 21-day mark.", "Add a 30-second exit survey for couriers who go silent — segment churn reasons (earnings, flexibility, app experience, competing work) to prioritise fixes.", "Build a comeback campaign with a personalised incentive based on the courier's historical peak earnings day.", "Introduce a loyalty tier programme (Bronze / Silver / Gold based on lifetime deliveries) to increase switching costs and recognise tenure.", "Analyse churn timing: couriers churning in month 1 (failed expectation) need a different treatment than those churning in month 6 (earnings plateau)."], "metric_note": "Focus metric: Monthly churn rate (target <6%). Secondary: % of churned couriers reactivated within 30 days of lapsing."}, "vs_fleet": {"health": 16, "active_hrs": 9.4, "churn": 4.5}, "urgency": 232}, {"cc": "ROU", "name": "Romania", "health": 66, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 90, "FTD Activation": 89, "Nurture": 61, "Retention": 25}, "metrics": {"pct_ready": 63.8, "pct_ftd": 49.2, "avg_days_to_ftd": 109.0, "pct_active_7d": 85.1, "pct_active_30d": 97.2, "avg_active_hrs": 35.0, "monthly_churn_pct": 13.5, "new_courier_share": 38.5, "crm_conversion": 0.0, "total_applicants": 4696}, "strongest": "Onboarding", "weakest": "Retention", "treatment": "Launch proactive reactivation: identify couriers silent >14d, target with personalised comeback offer before churn.", "region": "Balkans", "treatment_full": {"headline": "Stop the bleed: reactivate lapsing couriers before they churn", "why": "Replacing a churned courier costs 3-5x more than retaining one (acquisition spend, onboarding time, lower early-stage productivity). A monthly churn rate above 7% means the active base is replacing itself faster than it is growing — delivery quality suffers and supply reliability deteriorates. High new-courier share (>15%) compounds the problem: a fleet of newcomers has lower acceptance rates and longer delivery times.", "actions": ["Define \"at-risk\" as any courier with 14+ days of inactivity who was previously active — run a targeted comeback campaign before the 21-day mark.", "Add a 30-second exit survey for couriers who go silent — segment churn reasons (earnings, flexibility, app experience, competing work) to prioritise fixes.", "Build a comeback campaign with a personalised incentive based on the courier's historical peak earnings day.", "Introduce a loyalty tier programme (Bronze / Silver / Gold based on lifetime deliveries) to increase switching costs and recognise tenure.", "Analyse churn timing: couriers churning in month 1 (failed expectation) need a different treatment than those churning in month 6 (earnings plateau)."], "metric_note": "Focus metric: Monthly churn rate (target <6%). Secondary: % of churned couriers reactivated within 30 days of lapsing."}, "vs_fleet": {"health": 15, "active_hrs": 0.5, "churn": 3.2}, "urgency": 287}, {"cc": "AZE", "name": "Azerbaijan", "health": 64, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 78, "FTD Activation": 69, "Nurture": 59, "Retention": 50}, "metrics": {"pct_ready": 50.7, "pct_ftd": 30.9, "avg_days_to_ftd": 117.9, "pct_active_7d": 83.4, "pct_active_30d": 97.0, "avg_active_hrs": 30.5, "monthly_churn_pct": 11.9, "new_courier_share": 9.6, "crm_conversion": 0.01, "total_applicants": 8825}, "strongest": "Onboarding", "weakest": "Retention", "treatment": "Launch proactive reactivation: identify couriers silent >14d, target with personalised comeback offer before churn.", "region": "Caucasus & ME", "treatment_full": {"headline": "Stop the bleed: reactivate lapsing couriers before they churn", "why": "Replacing a churned courier costs 3-5x more than retaining one (acquisition spend, onboarding time, lower early-stage productivity). A monthly churn rate above 7% means the active base is replacing itself faster than it is growing — delivery quality suffers and supply reliability deteriorates. High new-courier share (>15%) compounds the problem: a fleet of newcomers has lower acceptance rates and longer delivery times.", "actions": ["Define \"at-risk\" as any courier with 14+ days of inactivity who was previously active — run a targeted comeback campaign before the 21-day mark.", "Add a 30-second exit survey for couriers who go silent — segment churn reasons (earnings, flexibility, app experience, competing work) to prioritise fixes.", "Build a comeback campaign with a personalised incentive based on the courier's historical peak earnings day.", "Introduce a loyalty tier programme (Bronze / Silver / Gold based on lifetime deliveries) to increase switching costs and recognise tenure.", "Analyse churn timing: couriers churning in month 1 (failed expectation) need a different treatment than those churning in month 6 (earnings plateau)."], "metric_note": "Focus metric: Monthly churn rate (target <6%). Secondary: % of churned couriers reactivated within 30 days of lapsing."}, "vs_fleet": {"health": 13, "active_hrs": -4.0, "churn": 1.6}, "urgency": 327}, {"cc": "XKX", "name": "Kosovo", "health": 62, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 95, "FTD Activation": 96, "Nurture": 58, "Retention": 0}, "metrics": {"pct_ready": 61.9, "pct_ftd": 52.3, "avg_days_to_ftd": 49.4, "pct_active_7d": 92.5, "pct_active_30d": 99.8, "avg_active_hrs": 22.5, "monthly_churn_pct": 29.4, "new_courier_share": 37.8, "crm_conversion": 0.0, "total_applicants": 916}, "strongest": "FTD Activation", "weakest": "Retention", "treatment": "Launch proactive reactivation: identify couriers silent >14d, target with personalised comeback offer before churn.", "region": "Balkans", "treatment_full": {"headline": "Stop the bleed: reactivate lapsing couriers before they churn", "why": "Replacing a churned courier costs 3-5x more than retaining one (acquisition spend, onboarding time, lower early-stage productivity). A monthly churn rate above 7% means the active base is replacing itself faster than it is growing — delivery quality suffers and supply reliability deteriorates. High new-courier share (>15%) compounds the problem: a fleet of newcomers has lower acceptance rates and longer delivery times.", "actions": ["Define \"at-risk\" as any courier with 14+ days of inactivity who was previously active — run a targeted comeback campaign before the 21-day mark.", "Add a 30-second exit survey for couriers who go silent — segment churn reasons (earnings, flexibility, app experience, competing work) to prioritise fixes.", "Build a comeback campaign with a personalised incentive based on the courier's historical peak earnings day.", "Introduce a loyalty tier programme (Bronze / Silver / Gold based on lifetime deliveries) to increase switching costs and recognise tenure.", "Analyse churn timing: couriers churning in month 1 (failed expectation) need a different treatment than those churning in month 6 (earnings plateau)."], "metric_note": "Focus metric: Monthly churn rate (target <6%). Secondary: % of churned couriers reactivated within 30 days of lapsing."}, "vs_fleet": {"health": 11, "active_hrs": -12.0, "churn": 19.1}, "urgency": 259}, {"cc": "HRV", "name": "Croatia", "health": 60, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 52, "FTD Activation": 57, "Nurture": 68, "Retention": 65}, "metrics": {"pct_ready": 31.5, "pct_ftd": 27.7, "avg_days_to_ftd": 192.3, "pct_active_7d": 65.0, "pct_active_30d": 96.0, "avg_active_hrs": 54.6, "monthly_churn_pct": 9.3, "new_courier_share": 6.5, "crm_conversion": 0.13, "total_applicants": 1529}, "strongest": "Nurture", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges.", "region": "Balkans", "treatment_full": {"headline": "Unblock the funnel: reduce time from application to first delivery", "why": "Couriers who take more than 60 days to complete onboarding are 3x more likely to churn before delivering once. Each extra week in the funnel costs earned intent — the courier loses motivation and often signs up with a competitor. The bottleneck usually sits at document verification or at the \"ready but not activated\" gap.", "actions": ["Automate document review with AI-assisted verification — target <24h turnaround.", "Send progress nudges every 48h for stuck applicants: show exactly which step is blocking and what is needed.", "Add a confirmation screen after each funnel step so couriers know they are moving forward.", "Test a guaranteed first-shift offer within 24h of reaching \"ready\" status — pre-assign a low-demand slot to remove the cold-start decision.", "Audit country-specific blockers: legal requirements, document types, or city-level onboarding capacity constraints."], "metric_note": "Focus metric: Average days from application to first delivery (target <60d). Secondary: % ready-to-deliver within 14d of application."}, "vs_fleet": {"health": 9, "active_hrs": 20.1, "churn": -1.0}, "urgency": 293}, {"cc": "GRC", "name": "Greece", "health": 57, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 40, "FTD Activation": 51, "Nurture": 59, "Retention": 78}, "metrics": {"pct_ready": 31.1, "pct_ftd": 27.3, "avg_days_to_ftd": 308.0, "pct_active_7d": 49.8, "pct_active_30d": 90.2, "avg_active_hrs": 45.4, "monthly_churn_pct": 6.2, "new_courier_share": 6.6, "crm_conversion": 0.03, "total_applicants": 7515}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges.", "region": "Mediterranean", "treatment_full": {"headline": "Unblock the funnel: reduce time from application to first delivery", "why": "Couriers who take more than 60 days to complete onboarding are 3x more likely to churn before delivering once. Each extra week in the funnel costs earned intent — the courier loses motivation and often signs up with a competitor. The bottleneck usually sits at document verification or at the \"ready but not activated\" gap.", "actions": ["Automate document review with AI-assisted verification — target <24h turnaround.", "Send progress nudges every 48h for stuck applicants: show exactly which step is blocking and what is needed.", "Add a confirmation screen after each funnel step so couriers know they are moving forward.", "Test a guaranteed first-shift offer within 24h of reaching \"ready\" status — pre-assign a low-demand slot to remove the cold-start decision.", "Audit country-specific blockers: legal requirements, document types, or city-level onboarding capacity constraints."], "metric_note": "Focus metric: Average days from application to first delivery (target <60d). Secondary: % ready-to-deliver within 14d of application."}, "vs_fleet": {"health": 6, "active_hrs": 10.9, "churn": -4.1}, "urgency": 384}, {"cc": "GEO", "name": "Georgia", "health": 57, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 42, "FTD Activation": 49, "Nurture": 64, "Retention": 72}, "metrics": {"pct_ready": 28.1, "pct_ftd": 24.8, "avg_days_to_ftd": 260.4, "pct_active_7d": 53.4, "pct_active_30d": 94.2, "avg_active_hrs": 47.2, "monthly_churn_pct": 8.2, "new_courier_share": 5.3, "crm_conversion": 0.1, "total_applicants": 5067}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges.", "region": "Caucasus & ME", "treatment_full": {"headline": "Unblock the funnel: reduce time from application to first delivery", "why": "Couriers who take more than 60 days to complete onboarding are 3x more likely to churn before delivering once. Each extra week in the funnel costs earned intent — the courier loses motivation and often signs up with a competitor. The bottleneck usually sits at document verification or at the \"ready but not activated\" gap.", "actions": ["Automate document review with AI-assisted verification — target <24h turnaround.", "Send progress nudges every 48h for stuck applicants: show exactly which step is blocking and what is needed.", "Add a confirmation screen after each funnel step so couriers know they are moving forward.", "Test a guaranteed first-shift offer within 24h of reaching \"ready\" status — pre-assign a low-demand slot to remove the cold-start decision.", "Audit country-specific blockers: legal requirements, document types, or city-level onboarding capacity constraints."], "metric_note": "Focus metric: Average days from application to first delivery (target <60d). Secondary: % ready-to-deliver within 14d of application."}, "vs_fleet": {"health": 6, "active_hrs": 12.7, "churn": -2.1}, "urgency": 367}, {"cc": "LTU", "name": "Lithuania", "health": 56, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 44, "FTD Activation": 47, "Nurture": 58, "Retention": 76}, "metrics": {"pct_ready": 31.7, "pct_ftd": 23.9, "avg_days_to_ftd": 269.5, "pct_active_7d": 50.3, "pct_active_30d": 91.9, "avg_active_hrs": 34.4, "monthly_churn_pct": 8.1, "new_courier_share": 2.9, "crm_conversion": 0.11, "total_applicants": 1865}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges.", "region": "Baltics", "treatment_full": {"headline": "Unblock the funnel: reduce time from application to first delivery", "why": "Couriers who take more than 60 days to complete onboarding are 3x more likely to churn before delivering once. Each extra week in the funnel costs earned intent — the courier loses motivation and often signs up with a competitor. The bottleneck usually sits at document verification or at the \"ready but not activated\" gap.", "actions": ["Automate document review with AI-assisted verification — target <24h turnaround.", "Send progress nudges every 48h for stuck applicants: show exactly which step is blocking and what is needed.", "Add a confirmation screen after each funnel step so couriers know they are moving forward.", "Test a guaranteed first-shift offer within 24h of reaching \"ready\" status — pre-assign a low-demand slot to remove the cold-start decision.", "Audit country-specific blockers: legal requirements, document types, or city-level onboarding capacity constraints."], "metric_note": "Focus metric: Average days from application to first delivery (target <60d). Secondary: % ready-to-deliver within 14d of application."}, "vs_fleet": {"health": 5, "active_hrs": -0.1, "churn": -2.2}, "urgency": 331}, {"cc": "EST", "name": "Estonia", "health": 55, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 50, "FTD Activation": 38, "Nurture": 52, "Retention": 80}, "metrics": {"pct_ready": 42.3, "pct_ftd": 21.0, "avg_days_to_ftd": 304.0, "pct_active_7d": 37.4, "pct_active_30d": 91.7, "avg_active_hrs": 20.6, "monthly_churn_pct": 7.3, "new_courier_share": 2.3, "crm_conversion": 0.1, "total_applicants": 2355}, "strongest": "Retention", "weakest": "FTD Activation", "treatment": "Boost first-delivery triggers: send shift-slot reminders within 48h of ready status, test incentive for first task.", "region": "Baltics", "treatment_full": {"headline": "Close the activation gap: convert \"ready\" couriers to first delivery within 7 days", "why": "Couriers who do not deliver within 7 days of reaching \"ready\" status have a 60-80% lower lifetime delivery rate. This is the single highest-leverage moment in the courier lifecycle. Below 50% 7-day activation signals a confidence or friction problem — not a supply problem. A first-delivery bonus, even small (5-10 EUR), can lift this rate by 15-20pp.", "actions": ["Send a personalised shift-slot recommendation within 2h of a courier reaching \"ready\" status — surface the highest-demand time in their city.", "Offer a first-delivery completion bonus, time-limited (expires in 7 days) to create urgency.", "Add social proof nudges: show how long a typical first delivery takes in their city.", "Set up an automated \"ready but not started\" re-engagement sequence at day 1, day 3, and day 7.", "For countries with >200 avg days to FTD, investigate whether the \"ready\" status is correctly assigned — some couriers may be marked ready before they are operationally equipped."], "metric_note": "Focus metric: % of ready couriers who deliver within 7 days (target >60%). Secondary: % active 30 days after FTD."}, "vs_fleet": {"health": 4, "active_hrs": -13.9, "churn": -3.0}, "urgency": 349}, {"cc": "POL", "name": "Poland", "health": 53, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 60, "FTD Activation": 55, "Nurture": 45, "Retention": 51}, "metrics": {"pct_ready": 58.6, "pct_ftd": 28.9, "avg_days_to_ftd": 344.8, "pct_active_7d": 54.0, "pct_active_30d": 83.6, "avg_active_hrs": 23.4, "monthly_churn_pct": 14.2, "new_courier_share": 4.0, "crm_conversion": 0.01, "total_applicants": 8830}, "strongest": "Onboarding", "weakest": "Nurture", "treatment": "Increase shift uptake frequency: behavioural push at low-duty times, earnings milestone messages, peer comparisons.", "region": "CEE", "treatment_full": {"headline": "Build the habit: increase shift uptake frequency in months 1-3", "why": "Couriers with fewer than 20 active hours per month in their second month have 4x higher churn by month 6. The nurture stage is about converting a one-time delivery into a sustainable habit. Low active hours often signal low earnings satisfaction, lack of shift visibility, or competing priorities — all addressable through targeted CRM.", "actions": ["Introduce an earnings streak programme: couriers who complete shifts 3 weeks in a row unlock a bonus — streaks dramatically increase weekly shift commitment.", "Send personalised earnings benchmarks monthly: show what top couriers in the city earned and how many more hours it took.", "Trigger a re-engagement push whenever a courier misses an entire week of shifts — do not wait for 14 days.", "Test weekly shift bundles: allow couriers to pre-claim a full week of shifts in one tap to increase commitment and reduce last-minute no-shows.", "Segment by vehicle type and time-of-day preference — a bicycle courier has different availability patterns than a car courier."], "metric_note": "Focus metric: Average active hours per courier per 30 days (target >40h). Secondary: % of FTD couriers still active at 90 days."}, "vs_fleet": {"health": 2, "active_hrs": -11.1, "churn": 3.9}, "urgency": 427}, {"cc": "BGR", "name": "Bulgaria", "health": 51, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 52, "FTD Activation": 57, "Nurture": 46, "Retention": 50}, "metrics": {"pct_ready": 33.9, "pct_ftd": 27.1, "avg_days_to_ftd": 207.7, "pct_active_7d": 66.6, "pct_active_30d": 92.9, "avg_active_hrs": 4.7, "monthly_churn_pct": 0.0, "new_courier_share": 0.0, "crm_conversion": 0.0, "total_applicants": 1346}, "strongest": "FTD Activation", "weakest": "Nurture", "treatment": "Increase shift uptake frequency: behavioural push at low-duty times, earnings milestone messages, peer comparisons.", "region": "Balkans", "treatment_full": {"headline": "Build the habit: increase shift uptake frequency in months 1-3", "why": "Couriers with fewer than 20 active hours per month in their second month have 4x higher churn by month 6. The nurture stage is about converting a one-time delivery into a sustainable habit. Low active hours often signal low earnings satisfaction, lack of shift visibility, or competing priorities — all addressable through targeted CRM.", "actions": ["Introduce an earnings streak programme: couriers who complete shifts 3 weeks in a row unlock a bonus — streaks dramatically increase weekly shift commitment.", "Send personalised earnings benchmarks monthly: show what top couriers in the city earned and how many more hours it took.", "Trigger a re-engagement push whenever a courier misses an entire week of shifts — do not wait for 14 days.", "Test weekly shift bundles: allow couriers to pre-claim a full week of shifts in one tap to increase commitment and reduce last-minute no-shows.", "Segment by vehicle type and time-of-day preference — a bicycle courier has different availability patterns than a car courier."], "metric_note": "Focus metric: Average active hours per courier per 30 days (target >40h). Secondary: % of FTD couriers still active at 90 days."}, "vs_fleet": {"health": 0, "active_hrs": -29.8, "churn": -10.3}, "urgency": 353}, {"cc": "LVA", "name": "Latvia", "health": 50, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 28, "FTD Activation": 37, "Nurture": 50, "Retention": 84}, "metrics": {"pct_ready": 26.5, "pct_ftd": 19.9, "avg_days_to_ftd": 379.5, "pct_active_7d": 36.3, "pct_active_30d": 87.4, "avg_active_hrs": 25.2, "monthly_churn_pct": 6.2, "new_courier_share": 0.8, "crm_conversion": 0.11, "total_applicants": 1356}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges.", "region": "Baltics", "treatment_full": {"headline": "Unblock the funnel: reduce time from application to first delivery", "why": "Couriers who take more than 60 days to complete onboarding are 3x more likely to churn before delivering once. Each extra week in the funnel costs earned intent — the courier loses motivation and often signs up with a competitor. The bottleneck usually sits at document verification or at the \"ready but not activated\" gap.", "actions": ["Automate document review with AI-assisted verification — target <24h turnaround.", "Send progress nudges every 48h for stuck applicants: show exactly which step is blocking and what is needed.", "Add a confirmation screen after each funnel step so couriers know they are moving forward.", "Test a guaranteed first-shift offer within 24h of reaching \"ready\" status — pre-assign a low-demand slot to remove the cold-start decision.", "Audit country-specific blockers: legal requirements, document types, or city-level onboarding capacity constraints."], "metric_note": "Focus metric: Average days from application to first delivery (target <60d). Secondary: % ready-to-deliver within 14d of application."}, "vs_fleet": {"health": -1, "active_hrs": -9.3, "churn": -4.1}, "urgency": 361}, {"cc": "CZE", "name": "Czechia", "health": 49, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 40, "FTD Activation": 43, "Nurture": 54, "Retention": 58}, "metrics": {"pct_ready": 37.5, "pct_ftd": 24.4, "avg_days_to_ftd": 360.9, "pct_active_7d": 39.5, "pct_active_30d": 87.3, "avg_active_hrs": 35.2, "monthly_churn_pct": 10.2, "new_courier_share": 8.6, "crm_conversion": 0.1, "total_applicants": 6346}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges.", "region": "CEE", "treatment_full": {"headline": "Unblock the funnel: reduce time from application to first delivery", "why": "Couriers who take more than 60 days to complete onboarding are 3x more likely to churn before delivering once. Each extra week in the funnel costs earned intent — the courier loses motivation and often signs up with a competitor. The bottleneck usually sits at document verification or at the \"ready but not activated\" gap.", "actions": ["Automate document review with AI-assisted verification — target <24h turnaround.", "Send progress nudges every 48h for stuck applicants: show exactly which step is blocking and what is needed.", "Add a confirmation screen after each funnel step so couriers know they are moving forward.", "Test a guaranteed first-shift offer within 24h of reaching \"ready\" status — pre-assign a low-demand slot to remove the cold-start decision.", "Audit country-specific blockers: legal requirements, document types, or city-level onboarding capacity constraints."], "metric_note": "Focus metric: Average days from application to first delivery (target <60d). Secondary: % ready-to-deliver within 14d of application."}, "vs_fleet": {"health": -2, "active_hrs": 0.7, "churn": -0.1}, "urgency": 447}, {"cc": "KAZ", "name": "Kazakhstan", "health": 46, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 60, "FTD Activation": 61, "Nurture": 64, "Retention": 0}, "metrics": {"pct_ready": 31.3, "pct_ftd": 24.7, "avg_days_to_ftd": 123.3, "pct_active_7d": 81.9, "pct_active_30d": 96.8, "avg_active_hrs": 42.8, "monthly_churn_pct": 21.5, "new_courier_share": 21.8, "crm_conversion": 0.1, "total_applicants": 22957}, "strongest": "Nurture", "weakest": "Retention", "treatment": "Launch proactive reactivation: identify couriers silent >14d, target with personalised comeback offer before churn.", "region": "Central Asia", "treatment_full": {"headline": "Stop the bleed: reactivate lapsing couriers before they churn", "why": "Replacing a churned courier costs 3-5x more than retaining one (acquisition spend, onboarding time, lower early-stage productivity). A monthly churn rate above 7% means the active base is replacing itself faster than it is growing — delivery quality suffers and supply reliability deteriorates. High new-courier share (>15%) compounds the problem: a fleet of newcomers has lower acceptance rates and longer delivery times.", "actions": ["Define \"at-risk\" as any courier with 14+ days of inactivity who was previously active — run a targeted comeback campaign before the 21-day mark.", "Add a 30-second exit survey for couriers who go silent — segment churn reasons (earnings, flexibility, app experience, competing work) to prioritise fixes.", "Build a comeback campaign with a personalised incentive based on the courier's historical peak earnings day.", "Introduce a loyalty tier programme (Bronze / Silver / Gold based on lifetime deliveries) to increase switching costs and recognise tenure.", "Analyse churn timing: couriers churning in month 1 (failed expectation) need a different treatment than those churning in month 6 (earnings plateau)."], "metric_note": "Focus metric: Monthly churn rate (target <6%). Secondary: % of churned couriers reactivated within 30 days of lapsing."}, "vs_fleet": {"health": -5, "active_hrs": 8.3, "churn": 11.2}, "urgency": 542}, {"cc": "HUN", "name": "Hungary", "health": 46, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 29, "FTD Activation": 37, "Nurture": 55, "Retention": 62}, "metrics": {"pct_ready": 29.1, "pct_ftd": 21.6, "avg_days_to_ftd": 389.6, "pct_active_7d": 31.5, "pct_active_30d": 86.8, "avg_active_hrs": 39.6, "monthly_churn_pct": 8.8, "new_courier_share": 9.3, "crm_conversion": 0.11, "total_applicants": 6949}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges.", "region": "CEE", "treatment_full": {"headline": "Unblock the funnel: reduce time from application to first delivery", "why": "Couriers who take more than 60 days to complete onboarding are 3x more likely to churn before delivering once. Each extra week in the funnel costs earned intent — the courier loses motivation and often signs up with a competitor. The bottleneck usually sits at document verification or at the \"ready but not activated\" gap.", "actions": ["Automate document review with AI-assisted verification — target <24h turnaround.", "Send progress nudges every 48h for stuck applicants: show exactly which step is blocking and what is needed.", "Add a confirmation screen after each funnel step so couriers know they are moving forward.", "Test a guaranteed first-shift offer within 24h of reaching \"ready\" status — pre-assign a low-demand slot to remove the cold-start decision.", "Audit country-specific blockers: legal requirements, document types, or city-level onboarding capacity constraints."], "metric_note": "Focus metric: Average days from application to first delivery (target <60d). Secondary: % ready-to-deliver within 14d of application."}, "vs_fleet": {"health": -5, "active_hrs": 5.1, "churn": -1.5}, "urgency": 478}, {"cc": "FIN", "name": "Finland", "health": 46, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 12, "FTD Activation": 17, "Nurture": 62, "Retention": 94}, "metrics": {"pct_ready": 6.1, "pct_ftd": 6.0, "avg_days_to_ftd": 380.2, "pct_active_7d": 26.1, "pct_active_30d": 88.7, "avg_active_hrs": 58.1, "monthly_churn_pct": 3.6, "new_courier_share": 2.7, "crm_conversion": 0.0, "total_applicants": 5467}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges.", "region": "Nordics", "treatment_full": {"headline": "Unblock the funnel: reduce time from application to first delivery", "why": "Couriers who take more than 60 days to complete onboarding are 3x more likely to churn before delivering once. Each extra week in the funnel costs earned intent — the courier loses motivation and often signs up with a competitor. The bottleneck usually sits at document verification or at the \"ready but not activated\" gap.", "actions": ["Automate document review with AI-assisted verification — target <24h turnaround.", "Send progress nudges every 48h for stuck applicants: show exactly which step is blocking and what is needed.", "Add a confirmation screen after each funnel step so couriers know they are moving forward.", "Test a guaranteed first-shift offer within 24h of reaching \"ready\" status — pre-assign a low-demand slot to remove the cold-start decision.", "Audit country-specific blockers: legal requirements, document types, or city-level onboarding capacity constraints."], "metric_note": "Focus metric: Average days from application to first delivery (target <60d). Secondary: % ready-to-deliver within 14d of application."}, "vs_fleet": {"health": -5, "active_hrs": 23.6, "churn": -6.7}, "urgency": 465}, {"cc": "SVN", "name": "Slovenia", "health": 45, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 32, "FTD Activation": 35, "Nurture": 50, "Retention": 64}, "metrics": {"pct_ready": 36.4, "pct_ftd": 24.9, "avg_days_to_ftd": 431.7, "pct_active_7d": 18.8, "pct_active_30d": 85.9, "avg_active_hrs": 27.5, "monthly_churn_pct": 8.6, "new_courier_share": 8.8, "crm_conversion": 0.09, "total_applicants": 1287}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges.", "region": "CEE", "treatment_full": {"headline": "Unblock the funnel: reduce time from application to first delivery", "why": "Couriers who take more than 60 days to complete onboarding are 3x more likely to churn before delivering once. Each extra week in the funnel costs earned intent — the courier loses motivation and often signs up with a competitor. The bottleneck usually sits at document verification or at the \"ready but not activated\" gap.", "actions": ["Automate document review with AI-assisted verification — target <24h turnaround.", "Send progress nudges every 48h for stuck applicants: show exactly which step is blocking and what is needed.", "Add a confirmation screen after each funnel step so couriers know they are moving forward.", "Test a guaranteed first-shift offer within 24h of reaching \"ready\" status — pre-assign a low-demand slot to remove the cold-start decision.", "Audit country-specific blockers: legal requirements, document types, or city-level onboarding capacity constraints."], "metric_note": "Focus metric: Average days from application to first delivery (target <60d). Secondary: % ready-to-deliver within 14d of application."}, "vs_fleet": {"health": -6, "active_hrs": -7.0, "churn": -1.7}, "urgency": 394}, {"cc": "SVK", "name": "Slovakia", "health": 45, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 28, "FTD Activation": 34, "Nurture": 48, "Retention": 70}, "metrics": {"pct_ready": 29.9, "pct_ftd": 17.7, "avg_days_to_ftd": 410.3, "pct_active_7d": 35.2, "pct_active_30d": 81.4, "avg_active_hrs": 34.5, "monthly_churn_pct": 8.2, "new_courier_share": 6.5, "crm_conversion": 0.05, "total_applicants": 2490}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges.", "region": "CEE", "treatment_full": {"headline": "Unblock the funnel: reduce time from application to first delivery", "why": "Couriers who take more than 60 days to complete onboarding are 3x more likely to churn before delivering once. Each extra week in the funnel costs earned intent — the courier loses motivation and often signs up with a competitor. The bottleneck usually sits at document verification or at the \"ready but not activated\" gap.", "actions": ["Automate document review with AI-assisted verification — target <24h turnaround.", "Send progress nudges every 48h for stuck applicants: show exactly which step is blocking and what is needed.", "Add a confirmation screen after each funnel step so couriers know they are moving forward.", "Test a guaranteed first-shift offer within 24h of reaching \"ready\" status — pre-assign a low-demand slot to remove the cold-start decision.", "Audit country-specific blockers: legal requirements, document types, or city-level onboarding capacity constraints."], "metric_note": "Focus metric: Average days from application to first delivery (target <60d). Secondary: % ready-to-deliver within 14d of application."}, "vs_fleet": {"health": -6, "active_hrs": 0.0, "churn": -2.1}, "urgency": 430}, {"cc": "LUX", "name": "Luxembourg", "health": 44, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 18, "FTD Activation": 19, "Nurture": 54, "Retention": 86}, "metrics": {"pct_ready": 1.7, "pct_ftd": 0.9, "avg_days_to_ftd": 327.4, "pct_active_7d": 42.9, "pct_active_30d": 100.0, "avg_active_hrs": 12.3, "monthly_churn_pct": 5.3, "new_courier_share": 3.7, "crm_conversion": 0.0, "total_applicants": 786}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges.", "region": "DACH", "treatment_full": {"headline": "Unblock the funnel: reduce time from application to first delivery", "why": "Couriers who take more than 60 days to complete onboarding are 3x more likely to churn before delivering once. Each extra week in the funnel costs earned intent — the courier loses motivation and often signs up with a competitor. The bottleneck usually sits at document verification or at the \"ready but not activated\" gap.", "actions": ["Automate document review with AI-assisted verification — target <24h turnaround.", "Send progress nudges every 48h for stuck applicants: show exactly which step is blocking and what is needed.", "Add a confirmation screen after each funnel step so couriers know they are moving forward.", "Test a guaranteed first-shift offer within 24h of reaching \"ready\" status — pre-assign a low-demand slot to remove the cold-start decision.", "Audit country-specific blockers: legal requirements, document types, or city-level onboarding capacity constraints."], "metric_note": "Focus metric: Average days from application to first delivery (target <60d). Secondary: % ready-to-deliver within 14d of application."}, "vs_fleet": {"health": -7, "active_hrs": -22.2, "churn": -5.0}, "urgency": 373}, {"cc": "DNK", "name": "Denmark", "health": 40, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 19, "FTD Activation": 29, "Nurture": 45, "Retention": 68}, "metrics": {"pct_ready": 29.0, "pct_ftd": 15.1, "avg_days_to_ftd": 485.9, "pct_active_7d": 31.7, "pct_active_30d": 77.6, "avg_active_hrs": 32.1, "monthly_churn_pct": 9.2, "new_courier_share": 5.3, "crm_conversion": 0.15, "total_applicants": 5539}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges.", "region": "Nordics", "treatment_full": {"headline": "Unblock the funnel: reduce time from application to first delivery", "why": "Couriers who take more than 60 days to complete onboarding are 3x more likely to churn before delivering once. Each extra week in the funnel costs earned intent — the courier loses motivation and often signs up with a competitor. The bottleneck usually sits at document verification or at the \"ready but not activated\" gap.", "actions": ["Automate document review with AI-assisted verification — target <24h turnaround.", "Send progress nudges every 48h for stuck applicants: show exactly which step is blocking and what is needed.", "Add a confirmation screen after each funnel step so couriers know they are moving forward.", "Test a guaranteed first-shift offer within 24h of reaching \"ready\" status — pre-assign a low-demand slot to remove the cold-start decision.", "Audit country-specific blockers: legal requirements, document types, or city-level onboarding capacity constraints."], "metric_note": "Focus metric: Average days from application to first delivery (target <60d). Secondary: % ready-to-deliver within 14d of application."}, "vs_fleet": {"health": -11, "active_hrs": -2.4, "churn": -1.1}, "urgency": 517}, {"cc": "MKD", "name": "N. Macedonia", "health": 38, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 42, "FTD Activation": 52, "Nurture": 59, "Retention": 0}, "metrics": {"pct_ready": 26.2, "pct_ftd": 23.1, "avg_days_to_ftd": 246.9, "pct_active_7d": 63.4, "pct_active_30d": 91.0, "avg_active_hrs": 37.5, "monthly_churn_pct": 25.8, "new_courier_share": 25.2, "crm_conversion": 0.29, "total_applicants": 2072}, "strongest": "Nurture", "weakest": "Retention", "treatment": "Launch proactive reactivation: identify couriers silent >14d, target with personalised comeback offer before churn.", "region": "Balkans", "treatment_full": {"headline": "Stop the bleed: reactivate lapsing couriers before they churn", "why": "Replacing a churned courier costs 3-5x more than retaining one (acquisition spend, onboarding time, lower early-stage productivity). A monthly churn rate above 7% means the active base is replacing itself faster than it is growing — delivery quality suffers and supply reliability deteriorates. High new-courier share (>15%) compounds the problem: a fleet of newcomers has lower acceptance rates and longer delivery times.", "actions": ["Define \"at-risk\" as any courier with 14+ days of inactivity who was previously active — run a targeted comeback campaign before the 21-day mark.", "Add a 30-second exit survey for couriers who go silent — segment churn reasons (earnings, flexibility, app experience, competing work) to prioritise fixes.", "Build a comeback campaign with a personalised incentive based on the courier's historical peak earnings day.", "Introduce a loyalty tier programme (Bronze / Silver / Gold based on lifetime deliveries) to increase switching costs and recognise tenure.", "Analyse churn timing: couriers churning in month 1 (failed expectation) need a different treatment than those churning in month 6 (earnings plateau)."], "metric_note": "Focus metric: Monthly churn rate (target <6%). Secondary: % of churned couriers reactivated within 30 days of lapsing."}, "vs_fleet": {"health": -13, "active_hrs": 3.0, "churn": 15.5}, "urgency": 473}, {"cc": "ISR", "name": "Israel", "health": 38, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 6, "FTD Activation": 21, "Nurture": 50, "Retention": 76}, "metrics": {"pct_ready": 16.5, "pct_ftd": 12.2, "avg_days_to_ftd": 536.5, "pct_active_7d": 19.0, "pct_active_30d": 75.2, "avg_active_hrs": 52.5, "monthly_churn_pct": 6.9, "new_courier_share": 6.0, "crm_conversion": 0.06, "total_applicants": 13069}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges.", "region": "Caucasus & ME", "treatment_full": {"headline": "Unblock the funnel: reduce time from application to first delivery", "why": "Couriers who take more than 60 days to complete onboarding are 3x more likely to churn before delivering once. Each extra week in the funnel costs earned intent — the courier loses motivation and often signs up with a competitor. The bottleneck usually sits at document verification or at the \"ready but not activated\" gap.", "actions": ["Automate document review with AI-assisted verification — target <24h turnaround.", "Send progress nudges every 48h for stuck applicants: show exactly which step is blocking and what is needed.", "Add a confirmation screen after each funnel step so couriers know they are moving forward.", "Test a guaranteed first-shift offer within 24h of reaching \"ready\" status — pre-assign a low-demand slot to remove the cold-start decision.", "Audit country-specific blockers: legal requirements, document types, or city-level onboarding capacity constraints."], "metric_note": "Focus metric: Average days from application to first delivery (target <60d). Secondary: % ready-to-deliver within 14d of application."}, "vs_fleet": {"health": -13, "active_hrs": 18.0, "churn": -3.4}, "urgency": 588}, {"cc": "NOR", "name": "Norway", "health": 36, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 8, "FTD Activation": 19, "Nurture": 42, "Retention": 73}, "metrics": {"pct_ready": 19.0, "pct_ftd": 10.8, "avg_days_to_ftd": 542.6, "pct_active_7d": 16.4, "pct_active_30d": 75.0, "avg_active_hrs": 31.1, "monthly_churn_pct": 8.2, "new_courier_share": 4.8, "crm_conversion": 0.11, "total_applicants": 2821}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges.", "region": "Nordics", "treatment_full": {"headline": "Unblock the funnel: reduce time from application to first delivery", "why": "Couriers who take more than 60 days to complete onboarding are 3x more likely to churn before delivering once. Each extra week in the funnel costs earned intent — the courier loses motivation and often signs up with a competitor. The bottleneck usually sits at document verification or at the \"ready but not activated\" gap.", "actions": ["Automate document review with AI-assisted verification — target <24h turnaround.", "Send progress nudges every 48h for stuck applicants: show exactly which step is blocking and what is needed.", "Add a confirmation screen after each funnel step so couriers know they are moving forward.", "Test a guaranteed first-shift offer within 24h of reaching \"ready\" status — pre-assign a low-demand slot to remove the cold-start decision.", "Audit country-specific blockers: legal requirements, document types, or city-level onboarding capacity constraints."], "metric_note": "Focus metric: Average days from application to first delivery (target <60d). Secondary: % ready-to-deliver within 14d of application."}, "vs_fleet": {"health": -15, "active_hrs": -3.4, "churn": -2.1}, "urgency": 508}, {"cc": "SWE", "name": "Sweden", "health": 34, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 11, "FTD Activation": 17, "Nurture": 38, "Retention": 72}, "metrics": {"pct_ready": 22.2, "pct_ftd": 11.5, "avg_days_to_ftd": 549.4, "pct_active_7d": 11.2, "pct_active_30d": 76.7, "avg_active_hrs": 19.4, "monthly_churn_pct": 8.4, "new_courier_share": 4.9, "crm_conversion": 0.08, "total_applicants": 3258}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges.", "region": "Nordics", "treatment_full": {"headline": "Unblock the funnel: reduce time from application to first delivery", "why": "Couriers who take more than 60 days to complete onboarding are 3x more likely to churn before delivering once. Each extra week in the funnel costs earned intent — the courier loses motivation and often signs up with a competitor. The bottleneck usually sits at document verification or at the \"ready but not activated\" gap.", "actions": ["Automate document review with AI-assisted verification — target <24h turnaround.", "Send progress nudges every 48h for stuck applicants: show exactly which step is blocking and what is needed.", "Add a confirmation screen after each funnel step so couriers know they are moving forward.", "Test a guaranteed first-shift offer within 24h of reaching \"ready\" status — pre-assign a low-demand slot to remove the cold-start decision.", "Audit country-specific blockers: legal requirements, document types, or city-level onboarding capacity constraints."], "metric_note": "Focus metric: Average days from application to first delivery (target <60d). Secondary: % ready-to-deliver within 14d of application."}, "vs_fleet": {"health": -17, "active_hrs": -15.1, "churn": -1.9}, "urgency": 534}, {"cc": "ISL", "name": "Iceland", "health": 27, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 0, "FTD Activation": 8, "Nurture": 29, "Retention": 70}, "metrics": {"pct_ready": 3.7, "pct_ftd": 2.1, "avg_days_to_ftd": 0, "pct_active_7d": 12.5, "pct_active_30d": 50.0, "avg_active_hrs": 52.9, "monthly_churn_pct": 9.4, "new_courier_share": 3.6, "crm_conversion": 0.05, "total_applicants": 379}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges.", "region": "Nordics", "treatment_full": {"headline": "Unblock the funnel: reduce time from application to first delivery", "why": "Couriers who take more than 60 days to complete onboarding are 3x more likely to churn before delivering once. Each extra week in the funnel costs earned intent — the courier loses motivation and often signs up with a competitor. The bottleneck usually sits at document verification or at the \"ready but not activated\" gap.", "actions": ["Automate document review with AI-assisted verification — target <24h turnaround.", "Send progress nudges every 48h for stuck applicants: show exactly which step is blocking and what is needed.", "Add a confirmation screen after each funnel step so couriers know they are moving forward.", "Test a guaranteed first-shift offer within 24h of reaching \"ready\" status — pre-assign a low-demand slot to remove the cold-start decision.", "Audit country-specific blockers: legal requirements, document types, or city-level onboarding capacity constraints."], "metric_note": "Focus metric: Average days from application to first delivery (target <60d). Secondary: % ready-to-deliver within 14d of application."}, "vs_fleet": {"health": -24, "active_hrs": 18.4, "churn": -0.9}, "urgency": 433}, {"cc": "AUT", "name": "Austria", "health": 19, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 0, "FTD Activation": 6, "Nurture": 8, "Retention": 62}, "metrics": {"pct_ready": 7.1, "pct_ftd": 3.4, "avg_days_to_ftd": 0, "pct_active_7d": 5.0, "pct_active_30d": 40.0, "avg_active_hrs": 16.3, "monthly_churn_pct": 8.5, "new_courier_share": 10.5, "crm_conversion": 0.15, "total_applicants": 1782}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges.", "region": "DACH", "treatment_full": {"headline": "Unblock the funnel: reduce time from application to first delivery", "why": "Couriers who take more than 60 days to complete onboarding are 3x more likely to churn before delivering once. Each extra week in the funnel costs earned intent — the courier loses motivation and often signs up with a competitor. The bottleneck usually sits at document verification or at the \"ready but not activated\" gap.", "actions": ["Automate document review with AI-assisted verification — target <24h turnaround.", "Send progress nudges every 48h for stuck applicants: show exactly which step is blocking and what is needed.", "Add a confirmation screen after each funnel step so couriers know they are moving forward.", "Test a guaranteed first-shift offer within 24h of reaching \"ready\" status — pre-assign a low-demand slot to remove the cold-start decision.", "Audit country-specific blockers: legal requirements, document types, or city-level onboarding capacity constraints."], "metric_note": "Focus metric: Average days from application to first delivery (target <60d). Secondary: % ready-to-deliver within 14d of application."}, "vs_fleet": {"health": -32, "active_hrs": -18.2, "churn": -1.8}, "urgency": 606}], "priority": ["AUT", "ISR", "KAZ", "SWE", "DNK", "NOR"], "regions": {"Mediterranean": {"avg_health": 67, "stages": {"Onboarding": 64, "FTD Activation": 72, "Nurture": 64, "Retention": 67}, "countries": ["MLT", "CYP", "GRC"], "n": 3, "grade": "At Risk"}, "DACH": {"avg_health": 45, "stages": {"Onboarding": 35, "FTD Activation": 38, "Nurture": 41, "Retention": 68}, "countries": ["DEU", "LUX", "AUT"], "n": 3, "grade": "Critical"}, "Balkans": {"avg_health": 59, "stages": {"Onboarding": 71, "FTD Activation": 75, "Nurture": 60, "Retention": 33}, "countries": ["SRB", "ALB", "ROU", "XKX", "HRV", "BGR", "MKD"], "n": 7, "grade": "At Risk"}, "Caucasus & ME": {"avg_health": 53, "stages": {"Onboarding": 42, "FTD Activation": 46, "Nurture": 58, "Retention": 66}, "countries": ["AZE", "GEO", "ISR"], "n": 3, "grade": "At Risk"}, "Baltics": {"avg_health": 54, "stages": {"Onboarding": 41, "FTD Activation": 41, "Nurture": 53, "Retention": 80}, "countries": ["LTU", "EST", "LVA"], "n": 3, "grade": "At Risk"}, "CEE": {"avg_health": 48, "stages": {"Onboarding": 38, "FTD Activation": 41, "Nurture": 50, "Retention": 61}, "countries": ["POL", "CZE", "HUN", "SVN", "SVK"], "n": 5, "grade": "Critical"}, "Central Asia": {"avg_health": 46, "stages": {"Onboarding": 60, "FTD Activation": 61, "Nurture": 64, "Retention": 0}, "countries": ["KAZ"], "n": 1, "grade": "Critical"}, "Nordics": {"avg_health": 37, "stages": {"Onboarding": 10, "FTD Activation": 18, "Nurture": 43, "Retention": 75}, "countries": ["FIN", "DNK", "NOR", "SWE", "ISL"], "n": 5, "grade": "Critical"}}, "fleet": {"avg_health": 51, "avg_active_hrs": 34.5, "n_countries": 30, "n_healthy": 0, "n_at_risk": 16, "n_critical": 14, "avg_churn": 10.3, "avg_ftd": 25.4}}</script>
 </body>
 </html>
