@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Courier Lifecycle Health Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --muted: #64748b;
+  --green: #22c55e; --green-bg: #f0fdf4;
+  --amber: #f59e0b; --amber-bg: #fffbeb;
+  --red: #ef4444;   --red-bg: #fef2f2;
+  --blue: #3b82f6;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,.07), 0 4px 12px rgba(0,0,0,.05);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+       background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* HEADER */
+.header { background: var(--surface); border-bottom: 1px solid var(--border);
+          padding: 20px 28px; display: flex; align-items: center; gap: 16px; }
+.header-icon { width: 40px; height: 40px; background: #eff6ff; border-radius: 10px;
+               display: flex; align-items: center; justify-content: center; font-size: 20px; }
+.header h1 { font-size: 18px; font-weight: 700; }
+.header p  { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.header-stats { margin-left: auto; display: flex; gap: 24px; }
+.stat { text-align: right; }
+.stat-val { font-size: 22px; font-weight: 700; }
+.stat-lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+
+/* TOOLBAR */
+.toolbar { padding: 16px 28px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.filter-btn { padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border);
+              background: white; font-size: 13px; cursor: pointer; transition: all .15s; font-weight: 500; }
+.filter-btn:hover { border-color: #94a3b8; }
+.filter-btn.active { background: var(--text); color: white; border-color: var(--text); }
+.filter-btn.green  { border-color: var(--green); color: var(--green); }
+.filter-btn.green.active { background: var(--green); color: white; }
+.filter-btn.amber  { border-color: var(--amber); color: #b45309; }
+.filter-btn.amber.active { background: var(--amber); color: white; }
+.filter-btn.red    { border-color: var(--red); color: var(--red); }
+.filter-btn.red.active { background: var(--red); color: white; }
+.sort-select { margin-left: auto; padding: 6px 12px; border: 1.5px solid var(--border);
+               border-radius: 8px; font-size: 13px; background: white; cursor: pointer; }
+
+/* GRID */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 14px; padding: 0 28px 28px; }
+.card { background: var(--surface); border-radius: var(--radius); border: 1.5px solid var(--border);
+        padding: 18px 20px; cursor: pointer; transition: all .15s; position: relative; }
+.card:hover { border-color: #94a3b8; box-shadow: var(--shadow); transform: translateY(-1px); }
+.card.selected { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.card-country { font-weight: 700; font-size: 15px; }
+.card-cc { font-size: 11px; color: var(--muted); font-weight: 500; }
+.badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.score-circle { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center;
+                justify-content: center; font-size: 17px; font-weight: 800; flex-shrink: 0; }
+
+/* Stage bars */
+.stages { display: flex; flex-direction: column; gap: 7px; margin-top: 4px; }
+.stage-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.stage-label { width: 108px; color: var(--muted); flex-shrink: 0; }
+.stage-bar-wrap { flex: 1; height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden; }
+.stage-bar { height: 100%; border-radius: 3px; transition: width .4s ease; }
+.stage-val { width: 28px; text-align: right; font-weight: 600; font-size: 11px; }
+
+/* DETAIL PANEL */
+.detail-panel { background: var(--surface); border-top: 2px solid var(--blue);
+                margin: 0 28px 28px; border-radius: 0 0 var(--radius) var(--radius);
+                padding: 28px; display: none; }
+.detail-panel.open { display: block; }
+.detail-header { display: flex; align-items: flex-start; gap: 20px; margin-bottom: 24px; }
+.detail-title { flex: 1; }
+.detail-title h2 { font-size: 22px; font-weight: 800; }
+.detail-title p  { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.detail-grade { text-align: center; }
+.big-score { font-size: 42px; font-weight: 900; line-height: 1; }
+.big-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; }
+
+.detail-body { display: grid; grid-template-columns: 260px 1fr; gap: 24px; }
+.radar-wrap { position: relative; }
+
+/* Diagnosis cards */
+.diag-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.diag-card { border-radius: 10px; padding: 16px; }
+.diag-card h4 { font-size: 13px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.diag-score-big { font-size: 28px; font-weight: 800; line-height: 1; }
+.diag-metrics { margin-top: 10px; display: flex; flex-direction: column; gap: 5px; }
+.diag-metric { display: flex; justify-content: space-between; font-size: 12px; }
+.diag-metric span:first-child { color: var(--muted); }
+.diag-metric span:last-child  { font-weight: 600; }
+
+/* Prescription */
+.rx-box { margin-top: 20px; background: #eff6ff; border-left: 4px solid var(--blue);
+          border-radius: 0 8px 8px 0; padding: 14px 16px; }
+.rx-box h4 { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 6px; display: flex; gap: 6px; align-items: center; }
+.rx-box p { font-size: 13px; line-height: 1.6; color: #1e3a5f; }
+.strength-tag { display: inline-flex; align-items: center; gap: 4px; background: var(--green-bg);
+                color: #15803d; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; margin-right: 6px; }
+.weakness-tag { display: inline-flex; align-items: center; gap: 4px; background: var(--red-bg);
+                color: #dc2626; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+
+.close-btn { background: none; border: 1.5px solid var(--border); border-radius: 8px;
+             padding: 6px 14px; cursor: pointer; font-size: 13px; color: var(--muted); }
+.close-btn:hover { background: var(--bg); }
+
+.no-results { grid-column: 1/-1; text-align: center; padding: 48px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">🩺</div>
+  <div>
+    <h1>Courier Lifecycle Health Dashboard</h1>
+    <p id="subtitle">AI diagnosis across Onboarding → FTD → Nurture → Retention · Last 90 days</p>
+  </div>
+  <div class="header-stats" id="header-stats"></div>
+</div>
+
+<div class="toolbar">
+  <button class="filter-btn active" onclick="setFilter('all',this)">All countries</button>
+  <button class="filter-btn green"  onclick="setFilter('Healthy',this)">🟢 Healthy</button>
+  <button class="filter-btn amber"  onclick="setFilter('At Risk',this)">🟡 At Risk</button>
+  <button class="filter-btn red"    onclick="setFilter('Critical',this)">🔴 Critical</button>
+  <select class="sort-select" onchange="setSort(this.value)">
+    <option value="health_desc">Sort: Health ↓</option>
+    <option value="health_asc">Sort: Health ↑</option>
+    <option value="name_asc">Sort: Country A-Z</option>
+    <option value="ftd_desc">Sort: FTD score ↓</option>
+    <option value="churn_desc">Sort: Retention score ↓</option>
+  </select>
+</div>
+
+<div class="grid" id="country-grid"></div>
+
+<div class="detail-panel" id="detail-panel">
+  <div class="detail-header">
+    <div class="detail-title">
+      <h2 id="dp-name"></h2>
+      <p id="dp-sub"></p>
+      <div style="margin-top:10px" id="dp-tags"></div>
+    </div>
+    <div class="detail-grade">
+      <div class="big-score" id="dp-score"></div>
+      <div class="big-label" id="dp-label"></div>
+      <div style="margin-top:8px; font-size:11px; color:var(--muted)">Health Score</div>
+    </div>
+    <button class="close-btn" onclick="closeDetail()">✕ Close</button>
+  </div>
+  <div class="detail-body">
+    <div class="radar-wrap">
+      <canvas id="radarChart" width="240" height="240"></canvas>
+    </div>
+    <div>
+      <div class="diag-grid" id="dp-diag-grid"></div>
+      <div class="rx-box">
+        <h4>💊 Recommended Treatment</h4>
+        <p id="dp-treatment"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA = [{"cc": "MLT", "name": "Malta", "health": 74, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 83, "FTD Activation": 89, "Nurture": 67, "Retention": 57}, "metrics": {"pct_ready": 56.5, "pct_ftd": 49.8, "avg_days_to_ftd": 119.4, "pct_active_7d": 80.6, "pct_active_30d": 97.4, "avg_active_hrs": 50.1, "monthly_churn_pct": 9.4, "new_courier_share": 11.1, "crm_conversion": 0.0, "total_applicants": 1252}, "strongest": "FTD Activation", "weakest": "Retention", "treatment": "Launch proactive reactivation: identify couriers silent >14d, target with personalised comeback offer before churn."}, {"cc": "DEU", "name": "Germany", "health": 73, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 87, "FTD Activation": 90, "Nurture": 61, "Retention": 55}, "metrics": {"pct_ready": 54.8, "pct_ftd": 47.2, "avg_days_to_ftd": 63.5, "pct_active_7d": 91.4, "pct_active_30d": 99.8, "avg_active_hrs": 18.7, "monthly_churn_pct": 10.4, "new_courier_share": 9.9, "crm_conversion": 0.42, "total_applicants": 7946}, "strongest": "FTD Activation", "weakest": "Retention", "treatment": "Launch proactive reactivation: identify couriers silent >14d, target with personalised comeback offer before churn."}, {"cc": "SRB", "name": "Serbia", "health": 72, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 78, "FTD Activation": 81, "Nurture": 62, "Retention": 67}, "metrics": {"pct_ready": 52.6, "pct_ftd": 42.1, "avg_days_to_ftd": 123.3, "pct_active_7d": 81.7, "pct_active_30d": 97.2, "avg_active_hrs": 38.1, "monthly_churn_pct": 8.7, "new_courier_share": 7.0, "crm_conversion": 0.0, "total_applicants": 3267}, "strongest": "FTD Activation", "weakest": "Nurture", "treatment": "Increase shift uptake frequency: behavioural push at low-duty times, earnings milestone messages, peer comparisons."}, {"cc": "CYP", "name": "Cyprus", "health": 69, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 68, "FTD Activation": 76, "Nurture": 66, "Retention": 66}, "metrics": {"pct_ready": 44.3, "pct_ftd": 41.1, "avg_days_to_ftd": 156.0, "pct_active_7d": 74.5, "pct_active_30d": 96.1, "avg_active_hrs": 49.4, "monthly_churn_pct": 8.4, "new_courier_share": 8.1, "crm_conversion": 0.0, "total_applicants": 2400}, "strongest": "FTD Activation", "weakest": "Nurture", "treatment": "Increase shift uptake frequency: behavioural push at low-duty times, earnings milestone messages, peer comparisons."}, {"cc": "ALB", "name": "Albania", "health": 67, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 87, "FTD Activation": 94, "Nurture": 66, "Retention": 22}, "metrics": {"pct_ready": 52.6, "pct_ftd": 49.3, "avg_days_to_ftd": 43.7, "pct_active_7d": 94.5, "pct_active_30d": 99.3, "avg_active_hrs": 43.9, "monthly_churn_pct": 14.8, "new_courier_share": 19.1, "crm_conversion": 0.0, "total_applicants": 1147}, "strongest": "FTD Activation", "weakest": "Retention", "treatment": "Launch proactive reactivation: identify couriers silent >14d, target with personalised comeback offer before churn."}, {"cc": "ROU", "name": "Romania", "health": 66, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 90, "FTD Activation": 89, "Nurture": 61, "Retention": 25}, "metrics": {"pct_ready": 63.8, "pct_ftd": 49.2, "avg_days_to_ftd": 109.0, "pct_active_7d": 85.1, "pct_active_30d": 97.2, "avg_active_hrs": 35.0, "monthly_churn_pct": 13.5, "new_courier_share": 38.5, "crm_conversion": 0.0, "total_applicants": 4696}, "strongest": "Onboarding", "weakest": "Retention", "treatment": "Launch proactive reactivation: identify couriers silent >14d, target with personalised comeback offer before churn."}, {"cc": "AZE", "name": "Azerbaijan", "health": 64, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 78, "FTD Activation": 69, "Nurture": 59, "Retention": 50}, "metrics": {"pct_ready": 50.7, "pct_ftd": 30.9, "avg_days_to_ftd": 117.9, "pct_active_7d": 83.4, "pct_active_30d": 97.0, "avg_active_hrs": 30.5, "monthly_churn_pct": 11.9, "new_courier_share": 9.6, "crm_conversion": 0.01, "total_applicants": 8825}, "strongest": "Onboarding", "weakest": "Retention", "treatment": "Launch proactive reactivation: identify couriers silent >14d, target with personalised comeback offer before churn."}, {"cc": "XKX", "name": "Kosovo", "health": 62, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 95, "FTD Activation": 96, "Nurture": 58, "Retention": 0}, "metrics": {"pct_ready": 61.9, "pct_ftd": 52.3, "avg_days_to_ftd": 49.4, "pct_active_7d": 92.5, "pct_active_30d": 99.8, "avg_active_hrs": 22.5, "monthly_churn_pct": 29.4, "new_courier_share": 37.8, "crm_conversion": 0.0, "total_applicants": 916}, "strongest": "FTD Activation", "weakest": "Retention", "treatment": "Launch proactive reactivation: identify couriers silent >14d, target with personalised comeback offer before churn."}, {"cc": "HRV", "name": "Croatia", "health": 60, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 52, "FTD Activation": 57, "Nurture": 68, "Retention": 65}, "metrics": {"pct_ready": 31.5, "pct_ftd": 27.7, "avg_days_to_ftd": 192.3, "pct_active_7d": 65.0, "pct_active_30d": 96.0, "avg_active_hrs": 54.6, "monthly_churn_pct": 9.3, "new_courier_share": 6.5, "crm_conversion": 0.13, "total_applicants": 1529}, "strongest": "Nurture", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "GRC", "name": "Greece", "health": 57, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 40, "FTD Activation": 51, "Nurture": 59, "Retention": 78}, "metrics": {"pct_ready": 31.1, "pct_ftd": 27.3, "avg_days_to_ftd": 308.0, "pct_active_7d": 49.8, "pct_active_30d": 90.2, "avg_active_hrs": 45.4, "monthly_churn_pct": 6.2, "new_courier_share": 6.6, "crm_conversion": 0.03, "total_applicants": 7515}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "GEO", "name": "Georgia", "health": 57, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 42, "FTD Activation": 49, "Nurture": 64, "Retention": 72}, "metrics": {"pct_ready": 28.1, "pct_ftd": 24.8, "avg_days_to_ftd": 260.4, "pct_active_7d": 53.4, "pct_active_30d": 94.2, "avg_active_hrs": 47.2, "monthly_churn_pct": 8.2, "new_courier_share": 5.3, "crm_conversion": 0.1, "total_applicants": 5067}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "LTU", "name": "Lithuania", "health": 56, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 44, "FTD Activation": 47, "Nurture": 58, "Retention": 76}, "metrics": {"pct_ready": 31.7, "pct_ftd": 23.9, "avg_days_to_ftd": 269.5, "pct_active_7d": 50.3, "pct_active_30d": 91.9, "avg_active_hrs": 34.4, "monthly_churn_pct": 8.1, "new_courier_share": 2.9, "crm_conversion": 0.11, "total_applicants": 1865}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "EST", "name": "Estonia", "health": 55, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 50, "FTD Activation": 38, "Nurture": 52, "Retention": 80}, "metrics": {"pct_ready": 42.3, "pct_ftd": 21.0, "avg_days_to_ftd": 304.0, "pct_active_7d": 37.4, "pct_active_30d": 91.7, "avg_active_hrs": 20.6, "monthly_churn_pct": 7.3, "new_courier_share": 2.3, "crm_conversion": 0.1, "total_applicants": 2355}, "strongest": "Retention", "weakest": "FTD Activation", "treatment": "Boost first-delivery triggers: send shift-slot reminders within 48h of ready status, test incentive for first task."}, {"cc": "POL", "name": "Poland", "health": 53, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 60, "FTD Activation": 55, "Nurture": 45, "Retention": 51}, "metrics": {"pct_ready": 58.6, "pct_ftd": 28.9, "avg_days_to_ftd": 344.8, "pct_active_7d": 54.0, "pct_active_30d": 83.6, "avg_active_hrs": 23.4, "monthly_churn_pct": 14.2, "new_courier_share": 4.0, "crm_conversion": 0.01, "total_applicants": 8830}, "strongest": "Onboarding", "weakest": "Nurture", "treatment": "Increase shift uptake frequency: behavioural push at low-duty times, earnings milestone messages, peer comparisons."}, {"cc": "BGR", "name": "Bulgaria", "health": 51, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 52, "FTD Activation": 57, "Nurture": 46, "Retention": 50}, "metrics": {"pct_ready": 33.9, "pct_ftd": 27.1, "avg_days_to_ftd": 207.7, "pct_active_7d": 66.6, "pct_active_30d": 92.9, "avg_active_hrs": 4.7, "monthly_churn_pct": 0.0, "new_courier_share": 0.0, "crm_conversion": 0.0, "total_applicants": 1346}, "strongest": "FTD Activation", "weakest": "Nurture", "treatment": "Increase shift uptake frequency: behavioural push at low-duty times, earnings milestone messages, peer comparisons."}, {"cc": "LVA", "name": "Latvia", "health": 50, "grade": {"label": "At Risk", "color": "#f59e0b", "bg": "#fffbeb"}, "scores": {"Onboarding": 28, "FTD Activation": 37, "Nurture": 50, "Retention": 84}, "metrics": {"pct_ready": 26.5, "pct_ftd": 19.9, "avg_days_to_ftd": 379.5, "pct_active_7d": 36.3, "pct_active_30d": 87.4, "avg_active_hrs": 25.2, "monthly_churn_pct": 6.2, "new_courier_share": 0.8, "crm_conversion": 0.11, "total_applicants": 1356}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "CZE", "name": "Czechia", "health": 49, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 40, "FTD Activation": 43, "Nurture": 54, "Retention": 58}, "metrics": {"pct_ready": 37.5, "pct_ftd": 24.4, "avg_days_to_ftd": 360.9, "pct_active_7d": 39.5, "pct_active_30d": 87.3, "avg_active_hrs": 35.2, "monthly_churn_pct": 10.2, "new_courier_share": 8.6, "crm_conversion": 0.1, "total_applicants": 6346}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "KAZ", "name": "Kazakhstan", "health": 46, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 60, "FTD Activation": 61, "Nurture": 64, "Retention": 0}, "metrics": {"pct_ready": 31.3, "pct_ftd": 24.7, "avg_days_to_ftd": 123.3, "pct_active_7d": 81.9, "pct_active_30d": 96.8, "avg_active_hrs": 42.8, "monthly_churn_pct": 21.5, "new_courier_share": 21.8, "crm_conversion": 0.1, "total_applicants": 22957}, "strongest": "Nurture", "weakest": "Retention", "treatment": "Launch proactive reactivation: identify couriers silent >14d, target with personalised comeback offer before churn."}, {"cc": "HUN", "name": "Hungary", "health": 46, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 29, "FTD Activation": 37, "Nurture": 55, "Retention": 62}, "metrics": {"pct_ready": 29.1, "pct_ftd": 21.6, "avg_days_to_ftd": 389.6, "pct_active_7d": 31.5, "pct_active_30d": 86.8, "avg_active_hrs": 39.6, "monthly_churn_pct": 8.8, "new_courier_share": 9.3, "crm_conversion": 0.11, "total_applicants": 6949}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "FIN", "name": "Finland", "health": 46, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 12, "FTD Activation": 17, "Nurture": 62, "Retention": 94}, "metrics": {"pct_ready": 6.1, "pct_ftd": 6.0, "avg_days_to_ftd": 380.2, "pct_active_7d": 26.1, "pct_active_30d": 88.7, "avg_active_hrs": 58.1, "monthly_churn_pct": 3.6, "new_courier_share": 2.7, "crm_conversion": 0.0, "total_applicants": 5467}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "SVN", "name": "Slovenia", "health": 45, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 32, "FTD Activation": 35, "Nurture": 50, "Retention": 64}, "metrics": {"pct_ready": 36.4, "pct_ftd": 24.9, "avg_days_to_ftd": 431.7, "pct_active_7d": 18.8, "pct_active_30d": 85.9, "avg_active_hrs": 27.5, "monthly_churn_pct": 8.6, "new_courier_share": 8.8, "crm_conversion": 0.09, "total_applicants": 1287}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "SVK", "name": "Slovakia", "health": 45, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 28, "FTD Activation": 34, "Nurture": 48, "Retention": 70}, "metrics": {"pct_ready": 29.9, "pct_ftd": 17.7, "avg_days_to_ftd": 410.3, "pct_active_7d": 35.2, "pct_active_30d": 81.4, "avg_active_hrs": 34.5, "monthly_churn_pct": 8.2, "new_courier_share": 6.5, "crm_conversion": 0.05, "total_applicants": 2490}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "LUX", "name": "Luxembourg", "health": 44, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 18, "FTD Activation": 19, "Nurture": 54, "Retention": 86}, "metrics": {"pct_ready": 1.7, "pct_ftd": 0.9, "avg_days_to_ftd": 327.4, "pct_active_7d": 42.9, "pct_active_30d": 100.0, "avg_active_hrs": 12.3, "monthly_churn_pct": 5.3, "new_courier_share": 3.7, "crm_conversion": 0.0, "total_applicants": 786}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "DNK", "name": "Denmark", "health": 40, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 19, "FTD Activation": 29, "Nurture": 45, "Retention": 68}, "metrics": {"pct_ready": 29.0, "pct_ftd": 15.1, "avg_days_to_ftd": 485.9, "pct_active_7d": 31.7, "pct_active_30d": 77.6, "avg_active_hrs": 32.1, "monthly_churn_pct": 9.2, "new_courier_share": 5.3, "crm_conversion": 0.15, "total_applicants": 5539}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "MKD", "name": "N. Macedonia", "health": 38, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 42, "FTD Activation": 52, "Nurture": 59, "Retention": 0}, "metrics": {"pct_ready": 26.2, "pct_ftd": 23.1, "avg_days_to_ftd": 246.9, "pct_active_7d": 63.4, "pct_active_30d": 91.0, "avg_active_hrs": 37.5, "monthly_churn_pct": 25.8, "new_courier_share": 25.2, "crm_conversion": 0.29, "total_applicants": 2072}, "strongest": "Nurture", "weakest": "Retention", "treatment": "Launch proactive reactivation: identify couriers silent >14d, target with personalised comeback offer before churn."}, {"cc": "ISR", "name": "Israel", "health": 38, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 6, "FTD Activation": 21, "Nurture": 50, "Retention": 76}, "metrics": {"pct_ready": 16.5, "pct_ftd": 12.2, "avg_days_to_ftd": 536.5, "pct_active_7d": 19.0, "pct_active_30d": 75.2, "avg_active_hrs": 52.5, "monthly_churn_pct": 6.9, "new_courier_share": 6.0, "crm_conversion": 0.06, "total_applicants": 13069}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "NOR", "name": "Norway", "health": 36, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 8, "FTD Activation": 19, "Nurture": 42, "Retention": 73}, "metrics": {"pct_ready": 19.0, "pct_ftd": 10.8, "avg_days_to_ftd": 542.6, "pct_active_7d": 16.4, "pct_active_30d": 75.0, "avg_active_hrs": 31.1, "monthly_churn_pct": 8.2, "new_courier_share": 4.8, "crm_conversion": 0.11, "total_applicants": 2821}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "SWE", "name": "Sweden", "health": 34, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 11, "FTD Activation": 17, "Nurture": 38, "Retention": 72}, "metrics": {"pct_ready": 22.2, "pct_ftd": 11.5, "avg_days_to_ftd": 549.4, "pct_active_7d": 11.2, "pct_active_30d": 76.7, "avg_active_hrs": 19.4, "monthly_churn_pct": 8.4, "new_courier_share": 4.9, "crm_conversion": 0.08, "total_applicants": 3258}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "ISL", "name": "Iceland", "health": 27, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 0, "FTD Activation": 8, "Nurture": 29, "Retention": 70}, "metrics": {"pct_ready": 3.7, "pct_ftd": 2.1, "avg_days_to_ftd": 0, "pct_active_7d": 12.5, "pct_active_30d": 50.0, "avg_active_hrs": 52.9, "monthly_churn_pct": 9.4, "new_courier_share": 3.6, "crm_conversion": 0.05, "total_applicants": 379}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}, {"cc": "AUT", "name": "Austria", "health": 19, "grade": {"label": "Critical", "color": "#ef4444", "bg": "#fef2f2"}, "scores": {"Onboarding": 0, "FTD Activation": 6, "Nurture": 8, "Retention": 62}, "metrics": {"pct_ready": 7.1, "pct_ftd": 3.4, "avg_days_to_ftd": 0, "pct_active_7d": 5.0, "pct_active_30d": 40.0, "avg_active_hrs": 16.3, "monthly_churn_pct": 8.5, "new_courier_share": 10.5, "crm_conversion": 0.15, "total_applicants": 1782}, "strongest": "Retention", "weakest": "Onboarding", "treatment": "Reduce time-to-ready: automate document review, personalise welcome flows, add progress nudges."}];
+
+const STAGE_ICONS = {
+  'Onboarding':'🚀','FTD Activation':'🎯','Nurture':'🌱','Retention':'🔒'
+};
+const STAGE_METRICS = {
+  'Onboarding': [
+    ['Ready-to-deliver rate','pct_ready','%'],
+    ['Avg days app → FTD','avg_days_to_ftd','d'],
+  ],
+  'FTD Activation': [
+    ['FTD conversion rate','pct_ftd','%'],
+    ['Active 7d after FTD','pct_active_7d','%'],
+  ],
+  'Nurture': [
+    ['Active 30d after FTD','pct_active_30d','%'],
+    ['Avg active hrs / 30d','avg_active_hrs','h'],
+  ],
+  'Retention': [
+    ['Monthly churn rate','monthly_churn_pct','%'],
+    ['New courier share','new_courier_share','%'],
+  ],
+};
+
+let currentFilter = 'all';
+let currentSort   = 'health_desc';
+let selectedCC    = null;
+let radarChartInst = null;
+
+function stageColor(s) {
+  if (s >= 75) return '#22c55e';
+  if (s >= 50) return '#f59e0b';
+  return '#ef4444';
+}
+function gradeBg(s) {
+  if (s >= 75) return '#f0fdf4';
+  if (s >= 50) return '#fffbeb';
+  return '#fef2f2';
+}
+
+function renderHeaderStats() {
+  const healthy  = DATA.filter(d=>d.health>=75).length;
+  const atRisk   = DATA.filter(d=>d.health>=50&&d.health<75).length;
+  const critical = DATA.filter(d=>d.health<50).length;
+  const avg = Math.round(DATA.reduce((s,d)=>s+d.health,0)/DATA.length);
+  document.getElementById('header-stats').innerHTML = `
+    <div class="stat"><div class="stat-val" style="color:var(--green)">${healthy}</div><div class="stat-lbl">Healthy</div></div>
+    <div class="stat"><div class="stat-val" style="color:var(--amber)">${atRisk}</div><div class="stat-lbl">At Risk</div></div>
+    <div class="stat"><div class="stat-val" style="color:var(--red)">${critical}</div><div class="stat-lbl">Critical</div></div>
+    <div class="stat"><div class="stat-val">${avg}</div><div class="stat-lbl">Avg Score</div></div>
+  `;
+}
+
+function sortedFiltered() {
+  let d = [...DATA];
+  if (currentFilter !== 'all') d = d.filter(x=>x.grade.label===currentFilter);
+  const key = currentSort;
+  d.sort((a,b)=>{
+    if (key==='health_desc') return b.health-a.health;
+    if (key==='health_asc')  return a.health-b.health;
+    if (key==='name_asc')    return a.name.localeCompare(b.name);
+    if (key==='ftd_desc')    return b.scores['FTD Activation']-a.scores['FTD Activation'];
+    if (key==='churn_desc')  return b.scores['Retention']-a.scores['Retention'];
+    return 0;
+  });
+  return d;
+}
+
+function renderGrid() {
+  const grid = document.getElementById('country-grid');
+  const items = sortedFiltered();
+  if (!items.length) {
+    grid.innerHTML = '<div class="no-results">No countries match this filter.</div>';
+    return;
+  }
+  grid.innerHTML = items.map(c => {
+    const stagesHtml = Object.entries(c.scores).map(([name,val])=>`
+      <div class="stage-row">
+        <span class="stage-label">${STAGE_ICONS[name]} ${name}</span>
+        <div class="stage-bar-wrap"><div class="stage-bar" style="width:${val}%;background:${stageColor(val)}"></div></div>
+        <span class="stage-val" style="color:${stageColor(val)}">${val}</span>
+      </div>`).join('');
+    const isSelected = c.cc === selectedCC;
+    return `
+      <div class="card${isSelected?' selected':''}" onclick="selectCountry('${c.cc}')" id="card-${c.cc}">
+        <div class="card-header">
+          <div>
+            <div class="card-country">${c.name}</div>
+            <div class="card-cc">${c.cc} · ${c.metrics.total_applicants.toLocaleString()} applicants</div>
+          </div>
+          <div class="score-circle" style="background:${gradeBg(c.health)};color:${c.grade.color}">${c.health}</div>
+        </div>
+        <div class="stages">${stagesHtml}</div>
+        <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap">
+          <span class="badge" style="background:${c.grade.bg};color:${c.grade.color}">${c.grade.label}</span>
+          <span style="font-size:11px;color:var(--muted);align-self:center">⚡ ${c.strongest}</span>
+          <span style="font-size:11px;color:#dc2626;align-self:center">⚠ ${c.weakest}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function selectCountry(cc) {
+  if (selectedCC === cc) { closeDetail(); return; }
+  selectedCC = cc;
+  renderGrid();
+  renderDetail(DATA.find(d=>d.cc===cc));
+  document.getElementById('detail-panel').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function closeDetail() {
+  selectedCC = null;
+  document.getElementById('detail-panel').classList.remove('open');
+  renderGrid();
+}
+
+function renderDetail(c) {
+  const panel = document.getElementById('detail-panel');
+  panel.classList.add('open');
+
+  document.getElementById('dp-name').textContent = c.name;
+  document.getElementById('dp-sub').textContent =
+    `${c.metrics.total_applicants.toLocaleString()} applicants · ${c.metrics.avg_active_hrs}h avg active hrs/30d`;
+  document.getElementById('dp-score').textContent = c.health;
+  document.getElementById('dp-score').style.color = c.grade.color;
+  document.getElementById('dp-label').textContent = c.grade.label;
+  document.getElementById('dp-label').style.color = c.grade.color;
+  document.getElementById('dp-tags').innerHTML = `
+    <span class="strength-tag">✓ Strength: ${c.strongest}</span>
+    <span class="weakness-tag">✗ Weakness: ${c.weakest}</span>`;
+  document.getElementById('dp-treatment').textContent = c.treatment;
+
+  // Diagnosis cards
+  const diagHtml = Object.entries(c.scores).map(([stage, val])=>{
+    const metrics = STAGE_METRICS[stage].map(([lbl,key,unit])=>`
+      <div class="diag-metric">
+        <span>${lbl}</span>
+        <span>${c.metrics[key] != null ? c.metrics[key]+unit : '—'}</span>
+      </div>`).join('');
+    return `
+      <div class="diag-card" style="background:${gradeBg(val)}">
+        <h4 style="color:${stageColor(val)}">${STAGE_ICONS[stage]} ${stage}</h4>
+        <div class="diag-score-big" style="color:${stageColor(val)}">${val}<span style="font-size:14px;font-weight:500;color:var(--muted)">/100</span></div>
+        <div class="diag-metrics">${metrics}</div>
+      </div>`;
+  }).join('');
+  document.getElementById('dp-diag-grid').innerHTML = diagHtml;
+
+  // Radar chart
+  if (radarChartInst) radarChartInst.destroy();
+  const ctx = document.getElementById('radarChart').getContext('2d');
+  radarChartInst = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: Object.keys(c.scores),
+      datasets: [{
+        data: Object.values(c.scores),
+        backgroundColor: 'rgba(59,130,246,.15)',
+        borderColor: '#3b82f6',
+        borderWidth: 2,
+        pointBackgroundColor: Object.values(c.scores).map(stageColor),
+        pointRadius: 5,
+      }]
+    },
+    options: {
+      responsive: false,
+      scales: { r: { min:0, max:100, ticks:{ stepSize:25, font:{size:10} },
+                     pointLabels:{ font:{size:12,weight:'600'} } } },
+      plugins: { legend:{ display:false } }
+    }
+  });
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  closeDetail();
+  renderGrid();
+}
+
+function setSort(v) { currentSort = v; renderGrid(); }
+
+renderHeaderStats();
+renderGrid();
+</script>
+</body>
+</html>
