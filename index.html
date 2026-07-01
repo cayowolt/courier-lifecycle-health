@@ -3,84 +3,117 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Courier Lifecycle Health Dashboard v5</title>
+<title>Courier Lifecycle Health v6</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root{
-  --bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2e3250;
-  --accent:#6c8ef5;--accent2:#a78bfa;--green:#22c55e;--yellow:#f59e0b;
-  --orange:#f97316;--red:#ef4444;--text:#e2e8f0;--muted:#94a3b8;
-  --card-r:12px;
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--surface3:#2a2f47;
+  --border:#2e3250;--accent:#6c8ef5;--accent2:#a78bfa;
+  --green:#22c55e;--yellow:#f59e0b;--orange:#f97316;--red:#ef4444;
+  --text:#e2e8f0;--muted:#94a3b8;--card-r:12px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;min-height:100vh}
-header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-header h1{font-size:1.25rem;font-weight:700;color:var(--text)}
+/* ---- Header ---- */
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+header h1{font-size:1.2rem;font-weight:700}
 header h1 span{color:var(--accent)}
-.badge{background:var(--accent);color:#fff;font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:600}
-.controls{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.period-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem;transition:.2s}
+.controls{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.period-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:5px 13px;border-radius:8px;cursor:pointer;font-size:.78rem;transition:.15s}
 .period-btn.active,.period-btn:hover{background:var(--accent);border-color:var(--accent);color:#fff}
-.region-filter{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:8px;font-size:.8rem;cursor:pointer}
-.tabs{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;gap:0;overflow-x:auto}
-.tab{padding:12px 20px;font-size:.85rem;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:.2s}
+select.region-filter{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 12px;border-radius:8px;font-size:.78rem;cursor:pointer}
+/* ---- Tabs ---- */
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;overflow-x:auto;gap:0}
+.tab{padding:11px 18px;font-size:.83rem;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:.15s}
 .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 .tab:hover{color:var(--text)}
-.pane{display:none;padding:24px;max-width:1400px;margin:0 auto}
+/* ---- Layout ---- */
+.pane{display:none;padding:22px;max-width:1440px;margin:0 auto}
 .pane.active{display:block}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:24px}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--card-r);padding:18px;position:relative;overflow:hidden;transition:.2s}
-.card:hover{border-color:var(--accent);transform:translateY(-1px)}
-.card-flag{position:absolute;right:14px;top:14px;font-size:1.5rem;opacity:.7}
-.card-cc{font-size:.7rem;font-weight:700;color:var(--muted);letter-spacing:.08em}
-.card-name{font-size:1rem;font-weight:600;margin:2px 0 10px}
-.health-bar{height:6px;background:var(--surface2);border-radius:99px;margin-bottom:10px;overflow:hidden}
-.health-fill{height:100%;border-radius:99px;transition:width .4s}
-.grade-badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:.75rem;font-weight:700;margin-bottom:8px}
-.metrics-row{display:flex;gap:12px;flex-wrap:wrap}
-.metric-item{flex:1;min-width:80px}
-.metric-label{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
-.metric-value{font-size:1.05rem;font-weight:600}
-.metric-note{font-size:.7rem;color:var(--muted);margin-top:1px}
-.treatment-tag{margin-top:10px;padding:6px 10px;background:var(--surface2);border-radius:6px;font-size:.72rem;color:var(--accent2)}
-.section-header{font-size:1.1rem;font-weight:600;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-.section-header span{font-size:.8rem;color:var(--muted);font-weight:400}
-.chart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--card-r);padding:20px;margin-bottom:24px}
-.chart-wrap h3{font-size:.9rem;font-weight:600;margin-bottom:16px;color:var(--muted)}
-.chart-wrap canvas{max-height:320px}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
 @media(max-width:900px){.two-col,.three-col{grid-template-columns:1fr}}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--card-r);padding:18px;text-align:center}
-.stat-big{font-size:2rem;font-weight:700;color:var(--accent)}
-.stat-label{font-size:.8rem;color:var(--muted);margin-top:4px}
-.funnel-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--card-r);padding:20px;margin-bottom:20px}
-.funnel-wrap h3{font-size:.9rem;font-weight:600;margin-bottom:16px;color:var(--muted)}
-.funnel-select{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:8px;font-size:.8rem;margin-bottom:14px}
-.funnel-stage{margin-bottom:8px}
-.funnel-label{display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:3px}
-.funnel-bar-bg{background:var(--surface2);border-radius:99px;height:24px;overflow:hidden}
-.funnel-bar-fill{height:100%;border-radius:99px;display:flex;align-items:center;padding-left:10px;font-size:.72rem;font-weight:600;transition:width .4s}
-.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--card-r);overflow:hidden;margin-bottom:24px}
+/* ---- Country Cards ---- */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-bottom:22px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--card-r);padding:16px;cursor:pointer;transition:.15s;position:relative;overflow:hidden}
+.card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 20px #6c8ef520}
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.card-flag{font-size:1.6rem;line-height:1}
+.card-grade{font-size:.7rem;font-weight:700;padding:2px 9px;border-radius:6px}
+.card-cc{font-size:.68rem;font-weight:700;color:var(--muted);letter-spacing:.08em;margin-bottom:1px}
+.card-name{font-size:.95rem;font-weight:600;margin-bottom:10px}
+.health-bar{height:5px;background:var(--surface2);border-radius:99px;margin-bottom:10px;overflow:hidden}
+.health-fill{height:100%;border-radius:99px}
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px}
+.kpi{text-align:center}
+.kpi-val{font-size:.9rem;font-weight:700}
+.kpi-lbl{font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.card-treatment{font-size:.7rem;color:var(--accent2);background:var(--surface2);padding:5px 8px;border-radius:6px;margin-top:6px}
+.card-hint{position:absolute;bottom:8px;right:10px;font-size:.6rem;color:var(--border)}
+/* ---- Charts ---- */
+.chart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--card-r);padding:18px;margin-bottom:18px}
+.chart-wrap h3{font-size:.85rem;font-weight:600;color:var(--muted);margin-bottom:14px}
+.chart-wrap canvas{max-height:300px}
+/* ---- Stat cards ---- */
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--card-r);padding:16px;text-align:center}
+.stat-big{font-size:1.9rem;font-weight:700;color:var(--accent)}
+.stat-lbl{font-size:.75rem;color:var(--muted);margin-top:3px}
+.stat-sub{font-size:.7rem;color:var(--border);margin-top:2px}
+/* ---- Tables ---- */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--card-r);overflow:hidden;margin-bottom:18px}
 table{width:100%;border-collapse:collapse}
-th{background:var(--surface2);padding:10px 14px;font-size:.75rem;font-weight:600;color:var(--muted);text-align:left;text-transform:uppercase;letter-spacing:.05em}
-td{padding:10px 14px;font-size:.83rem;border-top:1px solid var(--border)}
+th{background:var(--surface2);padding:9px 13px;font-size:.72rem;font-weight:600;color:var(--muted);text-align:left;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+td{padding:9px 13px;font-size:.81rem;border-top:1px solid var(--border)}
 tr:hover td{background:var(--surface2)}
-.pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:.72rem;font-weight:600}
-.no-data{text-align:center;padding:60px;color:var(--muted)}
-.legend-row{display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap}
-.legend-item{display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--muted)}
-.legend-dot{width:10px;height:10px;border-radius:50%}
-footer{background:var(--surface);border-top:1px solid var(--border);padding:12px 24px;margin-top:40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:gap;font-size:.75rem;color:var(--muted)}
-footer .updated{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 14px}
-.tooltip-content{background:var(--surface2) !important;border:1px solid var(--border) !important;color:var(--text) !important;border-radius:8px !important;padding:10px !important;font-size:.8rem !important}
+/* ---- Section header ---- */
+.sec-hd{font-size:1rem;font-weight:600;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.sec-hd span{font-size:.77rem;color:var(--muted);font-weight:400}
+/* ---- Funnel bars ---- */
+.funnel-stage{margin-bottom:8px}
+.funnel-lbl{display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:3px;color:var(--muted)}
+.funnel-lbl b{color:var(--text)}
+.funnel-bg{background:var(--surface2);border-radius:99px;height:22px;overflow:hidden}
+.funnel-fill{height:100%;border-radius:99px;display:flex;align-items:center;padding-left:10px;font-size:.7rem;font-weight:700;color:#fff;transition:width .5s ease}
+/* ---- Modal ---- */
+.modal-overlay{display:none;position:fixed;inset:0;background:#00000088;z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:min(920px,96vw);max-height:90vh;overflow-y:auto;padding:28px;position:relative}
+.modal-close{position:absolute;top:14px;right:16px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{color:var(--text);border-color:var(--text)}
+.modal-header{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.modal-flag{font-size:2.6rem}
+.modal-title h2{font-size:1.3rem;font-weight:700}
+.modal-title .sub{font-size:.8rem;color:var(--muted)}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.modal-section{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px}
+.modal-section h4{font-size:.8rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+.score-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.score-row-label{font-size:.8rem;flex:1}
+.score-row-bar{flex:2;height:7px;background:var(--surface);border-radius:99px;overflow:hidden;margin:0 10px}
+.score-row-fill{height:100%;border-radius:99px}
+.score-row-val{font-size:.78rem;font-weight:700;width:32px;text-align:right}
+.modal-treatment{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-top:14px}
+.modal-treatment h4{font-size:.8rem;font-weight:600;color:var(--accent2);margin-bottom:6px}
+.modal-treatment p{font-size:.8rem;color:var(--muted);line-height:1.6;margin-bottom:8px}
+.modal-treatment ul{padding-left:16px}
+.modal-treatment li{font-size:.78rem;color:var(--muted);margin-bottom:3px}
+/* ---- Retention cohort bars ---- */
+.cohort-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.cohort-lbl{font-size:.78rem;width:90px;color:var(--muted)}
+.cohort-bar-bg{flex:1;height:20px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.cohort-bar-fill{height:100%;border-radius:99px;display:flex;align-items:center;padding-left:8px;font-size:.68rem;font-weight:700;color:#fff}
+.cohort-val{font-size:.78rem;font-weight:600;width:45px;text-align:right}
+/* ---- Footer ---- */
+footer{background:var(--surface);border-top:1px solid var(--border);padding:10px 24px;display:flex;justify-content:space-between;align-items:center;font-size:.73rem;color:var(--muted);margin-top:32px;flex-wrap:wrap;gap:8px}
+.footer-badge{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 12px}
 </style>
 </head>
 <body>
+
 <header>
   <div>
     <h1>🛵 Courier Lifecycle <span>Health</span> Dashboard</h1>
-    <div style="font-size:.75rem;color:var(--muted);margin-top:2px">CRM coverage · Snowflake data · 30 markets</div>
+    <div style="font-size:.72rem;color:var(--muted);margin-top:1px">30 markets · Snowflake · v6</div>
   </div>
   <div class="controls">
     <select class="region-filter" id="regionFilter" onchange="applyFilters()">
@@ -92,7 +125,7 @@ footer .updated{background:var(--surface2);border:1px solid var(--border);border
       <option value="Caucasus">Caucasus</option>
       <option value="Middle East">Middle East</option>
     </select>
-    <div style="display:flex;gap:4px">
+    <div style="display:flex;gap:3px">
       <button class="period-btn active" onclick="setPeriod(this,'30d')">30d</button>
       <button class="period-btn" onclick="setPeriod(this,'60d')">60d</button>
       <button class="period-btn" onclick="setPeriod(this,'90d')">90d</button>
@@ -100,7 +133,7 @@ footer .updated{background:var(--surface2);border:1px solid var(--border);border
   </div>
 </header>
 
-<div class="tabs" id="tabBar">
+<div class="tabs">
   <div class="tab active" onclick="showTab('global',this)">🌍 Global</div>
   <div class="tab" onclick="showTab('countries',this)">📊 Countries</div>
   <div class="tab" onclick="showTab('onboarding',this)">📋 Onboarding</div>
@@ -110,84 +143,84 @@ footer .updated{background:var(--surface2);border:1px solid var(--border);border
   <div class="tab" onclick="showTab('faq',this)">❓ FAQ</div>
 </div>
 
-<!-- GLOBAL TAB -->
+<!-- ===== GLOBAL TAB ===== -->
 <div class="pane active" id="tab-global">
-  <div class="section-header">Country Health Overview <span id="countLabel">30 countries</span></div>
+  <div class="sec-hd">Country Health Overview <span id="countLabel">30 countries · click any card for details</span></div>
   <div class="grid" id="countryGrid"></div>
 </div>
 
-<!-- COUNTRIES TAB -->
+<!-- ===== COUNTRIES TAB ===== -->
 <div class="pane" id="tab-countries">
-  <div class="three-col" style="margin-bottom:20px" id="summaryStats"></div>
+  <div class="three-col" id="summaryStats" style="margin-bottom:18px"></div>
   <div class="two-col">
     <div class="chart-wrap">
-      <h3>Activation Rate vs Monthly Churn (bubble = active couriers)</h3>
+      <h3>Activation Rate vs Monthly Churn — bubble size = active couriers (30d)</h3>
       <canvas id="scatterChart"></canvas>
     </div>
     <div class="chart-wrap">
-      <h3>Health Score by Country</h3>
+      <h3>Full Lifecycle Health Score by Country</h3>
       <canvas id="healthBarChart"></canvas>
     </div>
   </div>
   <div class="chart-wrap">
-    <h3>Courier Lifecycle Funnel — Aggregated across filtered countries (last 90d applicants)</h3>
-    <canvas id="funnelChart"></canvas>
+    <h3>Onboarding Funnel — aggregated across filtered countries (last 90d applicants)</h3>
+    <canvas id="funnelAggChart"></canvas>
   </div>
 </div>
 
-<!-- ONBOARDING TAB -->
+<!-- ===== ONBOARDING TAB ===== -->
 <div class="pane" id="tab-onboarding">
-  <div class="section-header">Onboarding Funnel <span>Applicants → Contract → Signed → RTD → FTD</span></div>
-  <div class="two-col" style="margin-bottom:20px">
-    <div class="funnel-wrap">
-      <h3>Per-Country Funnel (last 90d applicants)</h3>
-      <select class="funnel-select" id="funnelCountrySelect" onchange="renderCountryFunnel()"></select>
+  <div class="sec-hd">Onboarding Funnel <span>Applicants → Contract Sent → Signed → RTD → FTD (last 90 days)</span></div>
+  <div class="two-col" style="margin-bottom:18px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--card-r);padding:18px">
+      <h3 style="font-size:.85rem;font-weight:600;color:var(--muted);margin-bottom:12px">Per-Country Funnel</h3>
+      <select id="funnelSel" class="region-filter" style="margin-bottom:14px;width:100%" onchange="renderCountryFunnel()"></select>
       <div id="countryFunnelViz"></div>
     </div>
     <div class="chart-wrap" style="margin-bottom:0">
-      <h3>Funnel Stage Rates by Country</h3>
+      <h3>RTD % and FTD % by Country</h3>
       <canvas id="funnelRatesChart"></canvas>
     </div>
   </div>
   <div class="chart-wrap">
-    <h3>Average Days to First Delivery (Applicants who activated, last 90d)</h3>
+    <h3>Average Days: Applied → First Delivery (activated couriers, last 90d)</h3>
     <canvas id="daysToFtdChart"></canvas>
   </div>
   <div class="table-wrap">
-    <table id="onboardingTable">
+    <table>
       <thead><tr>
-        <th>Country</th><th>Applicants</th><th>Contract Sent</th><th>Signed</th><th>RTD</th><th>FTD</th>
-        <th>→RTD %</th><th>→FTD %</th><th>Avg Days to FTD</th>
+        <th>Country</th><th>Applicants</th><th>Contract Sent</th><th>Signed</th>
+        <th>RTD</th><th>FTD</th><th>→RTD %</th><th>→FTD %</th><th>Avg Days</th>
       </tr></thead>
       <tbody id="onboardingBody"></tbody>
     </table>
   </div>
 </div>
 
-<!-- FTD TAB -->
+<!-- ===== FTD TAB ===== -->
 <div class="pane" id="tab-ftd">
-  <div class="section-header">First-Time Delivery (FTD) <span>Activation rate from applied couriers</span></div>
-  <div class="three-col" style="margin-bottom:20px" id="ftdStats"></div>
+  <div class="sec-hd">First-Time Delivery (FTD) <span>Activation from applied couriers</span></div>
+  <div class="three-col" id="ftdStats" style="margin-bottom:18px"></div>
   <div class="two-col">
     <div class="chart-wrap">
       <h3>FTD Activation Rate by Country (%)</h3>
       <canvas id="ftdRateChart"></canvas>
     </div>
     <div class="chart-wrap">
-      <h3>Applied vs Activated Couriers</h3>
+      <h3>Applied vs Activated Couriers (90d)</h3>
       <canvas id="ftdVolumeChart"></canvas>
     </div>
   </div>
   <div class="chart-wrap">
-    <h3>Average Days Applied → First Delivery</h3>
+    <h3>Average Days from Application to First Delivery</h3>
     <canvas id="ftdDaysChart"></canvas>
   </div>
 </div>
 
-<!-- NURTURE TAB -->
+<!-- ===== NURTURE TAB ===== -->
 <div class="pane" id="tab-nurture">
-  <div class="section-header">Active Courier Engagement <span>30-day and 7-day activity</span></div>
-  <div class="three-col" style="margin-bottom:20px" id="nurtureStats"></div>
+  <div class="sec-hd">Active Courier Engagement <span>30d and 7d activity windows</span></div>
+  <div class="three-col" id="nurtureStats" style="margin-bottom:18px"></div>
   <div class="two-col">
     <div class="chart-wrap">
       <h3>Active Couriers (30d) by Country</h3>
@@ -195,90 +228,126 @@ footer .updated{background:var(--surface2);border:1px solid var(--border);border
     </div>
     <div class="chart-wrap">
       <h3>7-day Retention within 30d Active Base (%)</h3>
-      <canvas id="w7RetentionChart"></canvas>
+      <canvas id="w7Chart"></canvas>
     </div>
   </div>
   <div class="chart-wrap">
     <h3>Deliveries per Active Courier (30d)</h3>
-    <canvas id="deliveriesPerCourierChart"></canvas>
+    <canvas id="delPerCourierChart"></canvas>
   </div>
 </div>
 
-<!-- RETENTION TAB -->
+<!-- ===== RETENTION TAB ===== -->
 <div class="pane" id="tab-retention">
-  <div class="section-header">Courier Retention & Churn <span>30d window: previous vs current period</span></div>
-  <div class="three-col" style="margin-bottom:20px" id="retentionStats"></div>
+  <div class="sec-hd">Courier Retention <span>M0 stock · M1/M2 cohort retention · ongoing churn</span></div>
+  <div class="three-col" id="retentionStats" style="margin-bottom:18px"></div>
+
   <div class="two-col">
     <div class="chart-wrap">
-      <h3>Monthly Churn Rate by Country (%)</h3>
-      <canvas id="churnRateChart"></canvas>
+      <h3>M1 Retention — couriers active 31–60d after FTD, still active today (%)</h3>
+      <canvas id="m1RetChart"></canvas>
     </div>
     <div class="chart-wrap">
-      <h3>Churned vs New Active Couriers</h3>
+      <h3>M2 Retention — couriers active 61–90d after FTD, still active today (%)</h3>
+      <canvas id="m2RetChart"></canvas>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="chart-wrap">
+      <h3>Courier Stock (M0) — FTD in last 30d (currently in month 1)</h3>
+      <canvas id="m0StockChart"></canvas>
+    </div>
+    <div class="chart-wrap">
+      <h3>Monthly Churn Rate — established active couriers (%)</h3>
+      <canvas id="churnRateChart"></canvas>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="chart-wrap">
+      <h3>M1 vs M2 Retention Comparison</h3>
+      <canvas id="m1m2CompareChart"></canvas>
+    </div>
+    <div class="chart-wrap">
+      <h3>Churned vs New Active Couriers (30d window)</h3>
       <canvas id="churnVsNewChart"></canvas>
     </div>
   </div>
+
   <div class="table-wrap">
     <table>
       <thead><tr>
-        <th>Country</th><th>Prev Active</th><th>Curr Active</th><th>Churned</th><th>New Active</th><th>Churn Rate</th><th>Net Change</th><th>Health</th>
+        <th>Country</th>
+        <th>M0 Stock</th>
+        <th>M1 Cohort</th><th>M1 Ret %</th>
+        <th>M2 Cohort</th><th>M2 Ret %</th>
+        <th>Prev Active</th><th>Churned</th><th>New Active</th><th>Churn %</th>
+        <th>Health</th>
       </tr></thead>
       <tbody id="retentionBody"></tbody>
     </table>
   </div>
 </div>
 
-<!-- FAQ TAB -->
+<!-- ===== FAQ TAB ===== -->
 <div class="pane" id="tab-faq">
-  <div class="section-header">FAQ & Methodology</div>
-  <div style="max-width:720px;display:flex;flex-direction:column;gap:16px">
+  <div style="max-width:740px;display:flex;flex-direction:column;gap:14px">
     <div class="chart-wrap">
-      <h3>How is the Health Score calculated?</h3>
-      <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-top:8px">
-        Health = 40% Activation Rate + 25% RTD Conversion + 25% Courier Retention + 10% Weekly Engagement<br><br>
-        • <b>Activation Rate</b>: % of applicants (last 90d) who completed their first delivery. Scored 0–55% → 0–100.<br>
-        • <b>RTD Conversion</b>: % of applicants who reached Ready-To-Deliver status. Scored 0–45% → 0–100.<br>
-        • <b>Courier Retention</b>: 1 minus monthly churn rate. Scored 60%–95% retention → 0–100.<br>
-        • <b>Weekly Engagement</b>: % of 30d-active couriers who also delivered in last 7d. Scored 30%–75% → 0–100.
+      <h3>Health Score — Full Lifecycle Formula</h3>
+      <p style="font-size:.83rem;color:var(--muted);line-height:1.8;margin-top:8px">
+        Health = <b>10%</b> Contract Funnel + <b>20%</b> RTD Rate + <b>25%</b> Activation (FTD) + <b>20%</b> M1 Retention + <b>15%</b> M2 Retention + <b>10%</b> Churn Control<br><br>
+        • <b>Contract Funnel</b>: % applicants who received a contract. 20–80% → 0–100. (10% weight — noisy across markets)<br>
+        • <b>RTD Rate</b>: % applicants who reached Ready-To-Deliver. 0–45% → 0–100. (20%)<br>
+        • <b>Activation</b>: % applicants who completed their first delivery. 0–55% → 0–100. (25%)<br>
+        • <b>M1 Retention</b>: % couriers with FTD 31–60d ago who are still active today. 40–90% → 0–100. (20%)<br>
+        • <b>M2 Retention</b>: % couriers with FTD 61–90d ago who are still active today. 20–70% → 0–100. (15%)<br>
+        • <b>Churn Control</b>: 1 − monthly churn of established active couriers. 5–40% churn → 100–0. (10%)
       </p>
     </div>
     <div class="chart-wrap">
-      <h3>Data Sources</h3>
-      <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-top:8px">
-        All data sourced from Wolt Snowflake production via the semantic layer:<br>
-        • <b>Onboarding funnel</b>: PRODUCTION.INTERMEDIATE.F_COURIER_ONBOARDING — one row per courier lifetime record. Windowed on TIME_FIRST_APPLIED_UTC (last 90 days).<br>
-        • <b>Active couriers & deliveries</b>: PRODUCTION.MART.COURIER_EARNING_METRICS joined to D_FLEETS for country mapping. PERIOD='day', is_correctly_tracked_delivery_order=TRUE.<br>
-        • <b>Churn</b>: Couriers active in days -60 to -31 who did NOT deliver in days -30 to -1, per country.<br><br>
-        Time window for activity metrics: rolling 30/60/90 days from today (2026-06-29).
+      <h3>Data Sources & Refresh</h3>
+      <p style="font-size:.83rem;color:var(--muted);line-height:1.8;margin-top:8px">
+        All data from Wolt Snowflake production (semantic layer):<br>
+        • <b>PRODUCTION.INTERMEDIATE.F_COURIER_ONBOARDING</b> — onboarding funnel, substages, FTD dates<br>
+        • <b>PRODUCTION.MART.COURIER_EARNING_METRICS</b> + <b>D_FLEETS</b> — active couriers, deliveries, churn calculation<br><br>
+        Time windows: onboarding funnel = last 90d of applicants · activity = rolling 30d · churn = 30d vs prior 30d window.<br>
+        Data queried: 2026-06-29.
       </p>
     </div>
     <div class="chart-wrap">
-      <h3>Onboarding Substage Definitions</h3>
-      <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-top:8px">
-        <b>Applicants</b>: TIME_FIRST_APPLIED_UTC IS NOT NULL — courier submitted first application.<br>
-        <b>Contract Received</b>: TIME_FIRST_CONTRACT_UTC IS NOT NULL — contract was sent to courier.<br>
-        <b>Contract Signed</b>: TIME_FIRST_SIGNED_UTC IS NOT NULL — courier signed contract.<br>
-        <b>RTD (Ready To Deliver)</b>: TIME_FIRST_READY_UTC IS NOT NULL — courier passed all checks and is ready.<br>
-        <b>FTD (First Time Delivery)</b>: TIME_FIRST_DELIVERY_UTC IS NOT NULL — courier completed first delivery.<br><br>
-        ⚠️ Stage counts are independent (not strictly nested) — a courier may have contract without signing in some markets. Signed rates are ~17% globally due to market-specific contract flows.
+      <h3>Retention Cohort Definitions</h3>
+      <p style="font-size:.83rem;color:var(--muted);line-height:1.8;margin-top:8px">
+        <b>M0 stock</b>: Couriers whose FTD was in the last 30 days — they are currently in their first month of activity.<br>
+        <b>M1 cohort</b>: Couriers whose FTD was 31–60 days ago. M1 retention = % of this cohort who delivered in last 30d.<br>
+        <b>M2 cohort</b>: Couriers whose FTD was 61–90 days ago. M2 retention = % of this cohort who delivered in last 30d.<br>
+        <b>Churn</b>: Couriers who delivered in days -60 to -31 but NOT in days -30 to -1 (separate from FTD cohorts — this tracks established fleet churn).
       </p>
     </div>
   </div>
 </div>
 
 <footer>
-  <div>Courier Lifecycle Health Dashboard v5 · Wolt CRM</div>
-  <div class="updated">🕐 Data queried: 2026-06-29 · Source: Snowflake (F_COURIER_ONBOARDING, COURIER_EARNING_METRICS)</div>
+  <span>🛵 Courier Lifecycle Health v6 · Wolt CRM</span>
+  <span class="footer-badge">🕐 Data: 2026-06-29 · Snowflake (F_COURIER_ONBOARDING + COURIER_EARNING_METRICS)</span>
 </footer>
 
-<script>
-const RAW = {"ALB":{"cc":"ALB","name":"Albania","region":"South Europe","health":88,"grade":"A","scores":{"activation":93,"rtd":100,"retention":63,"engagement":100},"applied":1129,"contract_sent":633,"signed_contract":0,"rtd":615,"ftd":576,"pct_contract":56.1,"pct_signed":0.0,"pct_rtd":54.5,"pct_ftd":51.0,"avg_days_to_ftd":1.5,"active_30d":1265,"active_7d":1072,"deliveries_30d":449900,"w7_retention":84.7,"avg_deliveries_per_courier":355.7,"churn_rate":18.1,"churned_count":231,"prev_active":1274,"new_active_couriers":0,"strongest":"RTD conversion","weakest":"Courier retention","treatment":"✅ Optimize & grow","treatment_detail":{"why":"Solid fundamentals (health 88). Focus on scaling volume and efficiency.","actions":["A/B test referral bonus tiers","Expand to new city zones","Launch loyalty milestone rewards"]}},"AUT":{"cc":"AUT","name":"Austria","region":"Central Europe","health":37,"grade":"D","scores":{"activation":6,"rtd":13,"retention":86,"engagement":100},"applied":1605,"contract_sent":489,"signed_contract":161,"rtd":97,"ftd":51,"pct_contract":30.5,"pct_signed":10.0,"pct_rtd":6.0,"pct_ftd":3.2,"avg_days_to_ftd":38.1,"active_30d":1338,"active_7d":1052,"deliveries_30d":175685,"w7_retention":78.6,"avg_deliveries_per_courier":131.3,"churn_rate":9.9,"churned_count":132,"prev_active":1333,"new_active_couriers":0,"strongest":"Weekly engagement","weakest":"Activation rate","treatment":"🚀 Activation campaign","treatment_detail":{"why":"Only 3% of applicants complete their first delivery. Onboarding CRM is critical.","actions":["Send FTD reminder at day 3, 7, 14","Activate earnings guarantee incentive","Peer-matching intro program"]}},"AZE":{"cc":"AZE","name":"Azerbaijan","region":"Caucasus","health":61,"grade":"C","scores":{"activation":56,"rtd":100,"retention":22,"engagement":83},"applied":9234,"contract_sent":6547,"signed_contract":187,"rtd":4692,"ftd":2858,"pct_contract":70.9,"pct_signed":2.0,"pct_rtd":50.8,"pct_ftd":31.0,"avg_days_to_ftd":4.9,"active_30d":6189,"active_7d":4158,"deliveries_30d":836530,"w7_retention":67.2,"avg_deliveries_per_courier":135.2,"churn_rate":32.4,"churned_count":2101,"prev_active":6484,"new_active_couriers":0,"strongest":"RTD conversion","weakest":"Courier retention","treatment":"🔄 Retention program","treatment_detail":{"why":"32% monthly churn. Active couriers are leaving — earnings or experience issues.","actions":["Launch re-engagement campaign at 14d inactivity","Earnings review for churned segment","Schedule feedback survey"]}},"BGR":{"cc":"BGR","name":"Bulgaria","region":"South Europe","health":63,"grade":"C","scores":{"activation":53,"rtd":81,"retention":47,"engagement":99},"applied":1294,"contract_sent":471,"signed_contract":0,"rtd":471,"ftd":380,"pct_contract":36.4,"pct_signed":0.0,"pct_rtd":36.4,"pct_ftd":29.4,"avg_days_to_ftd":7.2,"active_30d":764,"active_7d":571,"deliveries_30d":98053,"w7_retention":74.7,"avg_deliveries_per_courier":128.3,"churn_rate":23.7,"churned_count":177,"prev_active":746,"new_active_couriers":0,"strongest":"Weekly engagement","weakest":"Courier retention","treatment":"✅ Optimize & grow","treatment_detail":{"why":"Solid fundamentals (health 63). Focus on scaling volume and efficiency.","actions":["A/B test referral bonus tiers","Expand to new city zones","Launch loyalty milestone rewards"]}},"CYP":{"cc":"CYP","name":"Cyprus","region":"South Europe","health":72,"grade":"B","scores":{"activation":54,"rtd":76,"retention":83,"engagement":100},"applied":2149,"contract_sent":1255,"signed_contract":282,"rtd":732,"ftd":642,"pct_contract":58.4,"pct_signed":13.1,"pct_rtd":34.1,"pct_ftd":29.9,"avg_days_to_ftd":7.7,"active_30d":3717,"active_7d":3025,"deliveries_30d":1247052,"w7_retention":81.4,"avg_deliveries_per_courier":335.5,"churn_rate":10.8,"churned_count":407,"prev_active":3773,"new_active_couriers":0,"strongest":"Weekly engagement","weakest":"Activation rate","treatment":"✅ Optimize & grow","treatment_detail":{"why":"Solid fundamentals (health 72). Focus on scaling volume and efficiency.","actions":["A/B test referral bonus tiers","Expand to new city zones","Launch loyalty milestone rewards"]}},"CZE":{"cc":"CZE","name":"Czech Republic","region":"Central Europe","health":61,"grade":"C","scores":{"activation":46,"rtd":85,"retention":53,"engagement":83},"applied":6777,"contract_sent":6487,"signed_contract":1349,"rtd":2584,"ftd":1717,"pct_contract":95.7,"pct_signed":19.9,"pct_rtd":38.1,"pct_ftd":25.3,"avg_days_to_ftd":14.1,"active_30d":8610,"active_7d":5784,"deliveries_30d":1109960,"w7_retention":67.2,"avg_deliveries_per_courier":128.9,"churn_rate":21.5,"churned_count":1806,"prev_active":8385,"new_active_couriers":0,"strongest":"RTD conversion","weakest":"Activation rate","treatment":"✅ Optimize & grow","treatment_detail":{"why":"Solid fundamentals (health 61). Focus on scaling volume and efficiency.","actions":["A/B test referral bonus tiers","Expand to new city zones","Launch loyalty milestone rewards"]}},"DEU":{"cc":"DEU","name":"Germany","region":"Central Europe","health":82,"grade":"A","scores":{"activation":99,"rtd":100,"retention":31,"engagement":100},"applied":8568,"contract_sent":8499,"signed_contract":1,"rtd":5147,"ftd":4679,"pct_contract":99.2,"pct_signed":0.0,"pct_rtd":60.1,"pct_ftd":54.6,"avg_days_to_ftd":2.7,"active_30d":8376,"active_7d":7099,"deliveries_30d":2098067,"w7_retention":84.8,"avg_deliveries_per_courier":250.5,"churn_rate":29.1,"churned_count":2614,"prev_active":8978,"new_active_couriers":0,"strongest":"RTD conversion","weakest":"Courier retention","treatment":"🔄 Retention program","treatment_detail":{"why":"29% monthly churn. Active couriers are leaving — earnings or experience issues.","actions":["Launch re-engagement campaign at 14d inactivity","Earnings review for churned segment","Schedule feedback survey"]}},"DNK":{"cc":"DNK","name":"Denmark","region":"Nordics","health":53,"grade":"C","scores":{"activation":33,"rtd":72,"retention":56,"engagement":79},"applied":5387,"contract_sent":2843,"signed_contract":2237,"rtd":1751,"ftd":976,"pct_contract":52.8,"pct_signed":41.5,"pct_rtd":32.5,"pct_ftd":18.1,"avg_days_to_ftd":18.3,"active_30d":9187,"active_7d":6009,"deliveries_30d":1678143,"w7_retention":65.4,"avg_deliveries_per_courier":182.7,"churn_rate":20.3,"churned_count":1833,"prev_active":9047,"new_active_couriers":0,"strongest":"Weekly engagement","weakest":"Activation rate","treatment":"🚀 Activation campaign","treatment_detail":{"why":"Only 18% of applicants complete their first delivery. Onboarding CRM is critical.","actions":["Send FTD reminder at day 3, 7, 14","Activate earnings guarantee incentive","Peer-matching intro program"]}},"EST":{"cc":"EST","name":"Estonia","region":"Baltics","health":65,"grade":"B","scores":{"activation":53,"rtd":100,"retention":44,"engagement":76},"applied":2497,"contract_sent":1742,"signed_contract":1441,"rtd":1232,"ftd":733,"pct_contract":69.8,"pct_signed":57.7,"pct_rtd":49.3,"pct_ftd":29.4,"avg_days_to_ftd":15.6,"active_30d":2837,"active_7d":1826,"deliveries_30d":365986,"w7_retention":64.4,"avg_deliveries_per_courier":129.0,"churn_rate":24.5,"churned_count":653,"prev_active":2667,"new_active_couriers":0,"strongest":"RTD conversion","weakest":"Courier retention","treatment":"✅ Optimize & grow","treatment_detail":{"why":"Solid fundamentals (health 65). Focus on scaling volume and efficiency.","actions":["A/B test referral bonus tiers","Expand to new city zones","Launch loyalty milestone rewards"]}},"FIN":{"cc":"FIN","name":"Finland","region":"Nordics","health":37,"grade":"D","scores":{"activation":4,"rtd":6,"retention":96,"engagement":100},"applied":5548,"contract_sent":238,"signed_contract":87,"rtd":144,"ftd":134,"pct_contract":4.3,"pct_signed":1.6,"pct_rtd":2.6,"pct_ftd":2.4,"avg_days_to_ftd":8.1,"active_30d":6768,"active_7d":5736,"deliveries_30d":1958391,"w7_retention":84.8,"avg_deliveries_per_courier":289.4,"churn_rate":6.4,"churned_count":444,"prev_active":6913,"new_active_couriers":0,"strongest":"Weekly engagement","weakest":"Activation rate","treatment":"🚀 Activation campaign","treatment_detail":{"why":"Only 2% of applicants complete their first delivery. Onboarding CRM is critical.","actions":["Send FTD reminder at day 3, 7, 14","Activate earnings guarantee incentive","Peer-matching intro program"]}},"GEO":{"cc":"GEO","name":"Georgia","region":"Caucasus","health":61,"grade":"C","scores":{"activation":48,"rtd":62,"retention":66,"engagement":100},"applied":5279,"contract_sent":3564,"signed_contract":1943,"rtd":1486,"ftd":1381,"pct_contract":67.5,"pct_signed":36.8,"pct_rtd":28.1,"pct_ftd":26.2,"avg_days_to_ftd":10.0,"active_30d":8355,"active_7d":6401,"deliveries_30d":1644660,"w7_retention":76.6,"avg_deliveries_per_courier":196.8,"churn_rate":17.0,"churned_count":1419,"prev_active":8341,"new_active_couriers":0,"strongest":"Weekly engagement","weakest":"Activation rate","treatment":"✅ Optimize & grow","treatment_detail":{"why":"Solid fundamentals (health 61). Focus on scaling volume and efficiency.","actions":["A/B test referral bonus tiers","Expand to new city zones","Launch loyalty milestone rewards"]}},"GRC":{"cc":"GRC","name":"Greece","region":"South Europe","health":66,"grade":"B","scores":{"activation":49,"rtd":70,"retention":74,"engagement":100},"applied":6886,"contract_sent":3656,"signed_contract":1554,"rtd":2165,"ftd":1864,"pct_contract":53.1,"pct_signed":22.6,"pct_rtd":31.4,"pct_ftd":27.1,"avg_days_to_ftd":11.5,"active_30d":17404,"active_7d":13324,"deliveries_30d":3080054,"w7_retention":76.6,"avg_deliveries_per_courier":177.0,"churn_rate":14.1,"churned_count":2506,"prev_active":17784,"new_active_couriers":0,"strongest":"Weekly engagement","weakest":"Activation rate","treatment":"✅ Optimize & grow","treatment_detail":{"why":"Solid fundamentals (health 66). Focus on scaling volume and efficiency.","actions":["A/B test referral bonus tiers","Expand to new city zones","Launch loyalty milestone rewards"]}},"HRV":{"cc":"HRV","name":"Croatia","region":"Central Europe","health":67,"grade":"B","scores":{"activation":48,"rtd":68,"retention":84,"engagement":100},"applied":1501,"contract_sent":1029,"signed_contract":83,"rtd":459,"ftd":398,"pct_contract":68.6,"pct_signed":5.5,"pct_rtd":30.6,"pct_ftd":26.5,"avg_days_to_ftd":8.4,"active_30d":2549,"active_7d":2128,"deliveries_30d":1076909,"w7_retention":83.5,"avg_deliveries_per_courier":422.5,"churn_rate":10.5,"churned_count":269,"prev_active":2552,"new_active_couriers":0,"strongest":"Weekly engagement","weakest":"Activation rate","treatment":"✅ Optimize & grow","treatment_detail":{"why":"Solid fundamentals (health 67). Focus on scaling volume and efficiency.","actions":["A/B test referral bonus tiers","Expand to new city zones","Launch loyalty milestone rewards"]}},"HUN":{"cc":"HUN","name":"Hungary","region":"Central Europe","health":55,"grade":"C","scores":{"activation":38,"rtd":63,"retention":60,"engagement":90},"applied":7004,"contract_sent":5724,"signed_contract":1241,"rtd":1976,"ftd":1457,"pct_contract":81.7,"pct_signed":17.7,"pct_rtd":28.2,"pct_ftd":20.8,"avg_days_to_ftd":16.1,"active_30d":10944,"active_7d":7732,"deliveries_30d":1818845,"w7_retention":70.7,"avg_deliveries_per_courier":166.2,"churn_rate":19.1,"churned_count":2066,"prev_active":10837,"new_active_couriers":0,"strongest":"Weekly engagement","weakest":"Activation rate","treatment":"🚀 Activation campaign","treatment_detail":{"why":"Only 21% of applicants complete their first delivery. Onboarding CRM is critical.","actions":["Send FTD reminder at day 3, 7, 14","Activate earnings guarantee incentive","Peer-matching intro program"]}},"ISL":{"cc":"ISL","name":"Iceland","region":"Nordics","health":33,"grade":"F","scores":{"activation":4,"rtd":14,"retention":73,"engagement":96},"applied":387,"contract_sent":51,"signed_contract":40,"rtd":24,"ftd":8,"pct_contract":13.2,"pct_signed":10.3,"pct_rtd":6.2,"pct_ftd":2.1,"avg_days_to_ftd":21.9,"active_30d":442,"active_7d":324,"deliveries_30d":101345,"w7_retention":73.3,"avg_deliveries_per_courier":229.3,"churn_rate":14.3,"churned_count":58,"prev_active":407,"new_active_couriers":0,"strongest":"Weekly engagement","weakest":"Activation rate","treatment":"🚀 Activation campaign","treatment_detail":{"why":"Only 2% of applicants complete their first delivery. Onboarding CRM is critical.","actions":["Send FTD reminder at day 3, 7, 14","Activate earnings guarantee incentive","Peer-matching intro program"]}},"ISR":{"cc":"ISR","name":"Israel","region":"Middle East","health":47,"grade":"D","scores":{"activation":23,"rtd":37,"retention":75,"engagement":100},"applied":13270,"contract_sent":4852,"signed_contract":2571,"rtd":2201,"ftd":1650,"pct_contract":36.6,"pct_signed":19.4,"pct_rtd":16.6,"pct_ftd":12.4,"avg_days_to_ftd":21.3,"active_30d":25742,"active_7d":19827,"deliveries_30d":5006147,"w7_retention":77.0,"avg_deliveries_per_courier":194.5,"churn_rate":13.9,"churned_count":3507,"prev_active":25148,"new_active_couriers":0,"strongest":"Weekly engagement","weakest":"Activation rate","treatment":"🚀 Activation campaign","treatment_detail":{"why":"Only 12% of applicants complete their first delivery. Onboarding CRM is critical.","actions":["Send FTD reminder at day 3, 7, 14","Activate earnings guarantee incentive","Peer-matching intro program"]}},"KAZ":{"cc":"KAZ","name":"Kazakhstan","region":"Caucasus","health":46,"grade":"D","scores":{"activation":44,"rtd":67,"retention":15,"engagement":74},"applied":23447,"contract_sent":15580,"signed_contract":0,"rtd":7060,"ftd":5641,"pct_contract":66.4,"pct_signed":0.0,"pct_rtd":30.1,"pct_ftd":24.1,"avg_days_to_ftd":5.2,"active_30d":13316,"active_7d":8428,"deliveries_30d":1628433,"w7_retention":63.3,"avg_deliveries_per_courier":122.3,"churn_rate":34.6,"churned_count":4792,"prev_active":13865,"new_active_couriers":0,"strongest":"Weekly engagement","weakest":"Courier retention","treatment":"🔄 Retention program","treatment_detail":{"why":"35% monthly churn. Active couriers are leaving — earnings or experience issues.","actions":["Launch re-engagement campaign at 14d inactivity","Earnings review for churned segment","Schedule feedback survey"]}},"LTU":{"cc":"LTU","name":"Lithuania","region":"Baltics","health":59,"grade":"C","scores":{"activation":42,"rtd":64,"retention":65,"engagement":100},"applied":1805,"contract_sent":893,"signed_contract":646,"rtd":523,"ftd":420,"pct_contract":49.5,"pct_signed":35.8,"pct_rtd":29.0,"pct_ftd":23.3,"avg_days_to_ftd":12.7,"active_30d":3679,"active_7d":2824,"deliveries_30d":527575,"w7_retention":76.8,"avg_deliveries_per_courier":143.4,"churn_rate":17.1,"churned_count":660,"prev_active":3865,"new_active_couriers":0,"strongest":"Weekly engagement","weakest":"Activation rate","treatment":"✅ Optimize & grow","treatment_detail":{"why":"Solid fundamentals (health 59). Focus on scaling volume and efficiency.","actions":["A/B test referral bonus tiers","Expand to new city zones","Launch loyalty milestone rewards"]}},"LUX":{"cc":"LUX","name":"Luxembourg","region":"Central Europe","health":36,"grade":"D","scores":{"activation":3,"rtd":6,"retention":91,"engagement":100},"applied":781,"contract_sent":146,"signed_contract":50,"rtd":20,"ftd":13,"pct_contract":18.7,"pct_signed":6.4,"pct_rtd":2.6,"pct_ftd":1.7,"avg_days_to_ftd":32.8,"active_30d":702,"active_7d":570,"deliveries_30d":147936,"w7_retention":81.2,"avg_deliveries_per_courier":210.7,"churn_rate":8.0,"churned_count":52,"prev_active":652,"new_active_couriers":0,"strongest":"Weekly engagement","weakest":"Activation rate","treatment":"🚀 Activation campaign","treatment_detail":{"why":"Only 2% of applicants complete their first delivery. Onboarding CRM is critical.","actions":["Send FTD reminder at day 3, 7, 14","Activate earnings guarantee incentive","Peer-matching intro program"]}},"LVA":{"cc":"LVA","name":"Latvia","region":"Baltics","health":60,"grade":"C","scores":{"activation":47,"rtd":68,"retention":61,"engagement":91},"applied":1339,"contract_sent":812,"signed_contract":482,"rtd":411,"ftd":349,"pct_contract":60.6,"pct_signed":36.0,"pct_rtd":30.7,"pct_ftd":26.1,"avg_days_to_ftd":17.9,"active_30d":2409,"active_7d":1707,"deliveries_30d":323242,"w7_retention":70.9,"avg_deliveries_per_courier":134.2,"churn_rate":18.5,"churned_count":458,"prev_active":2471,"new_active_couriers":0,"strongest":"Weekly engagement","weakest":"Activation rate","treatment":"✅ Optimize & grow","treatment_detail":{"why":"Solid fundamentals (health 60). Focus on scaling volume and efficiency.","actions":["A/B test referral bonus tiers","Expand to new city zones","Launch loyalty milestone rewards"]}},"MKD":{"cc":"MKD","name":"North Macedonia","region":"South Europe","health":53,"grade":"C","scores":{"activation":38,"rtd":52,"retention":59,"engagement":96},"applied":1914,"contract_sent":1861,"signed_contract":0,"rtd":452,"ftd":396,"pct_contract":97.2,"pct_signed":0.0,"pct_rtd":23.6,"pct_ftd":20.7,"avg_days_to_ftd":8.2,"active_30d":1460,"active_7d":1071,"deliveries_30d":200545,"w7_retention":73.4,"avg_deliveries_per_courier":137.4,"churn_rate":19.4,"churned_count":306,"prev_active":1578,"new_active_couriers":0,"strongest":"Weekly engagement","weakest":"Activation rate","treatment":"🚀 Activation campaign","treatment_detail":{"why":"Only 21% of applicants complete their first delivery. Onboarding CRM is critical.","actions":["Send FTD reminder at day 3, 7, 14","Activate earnings guarantee incentive","Peer-matching intro program"]}},"MLT":{"cc":"MLT","name":"Malta","region":"South Europe","health":93,"grade":"A","scores":{"activation":95,"rtd":100,"retention":81,"engagement":100},"applied":1278,"contract_sent":998,"signed_contract":74,"rtd":744,"ftd":668,"pct_contract":78.1,"pct_signed":5.8,"pct_rtd":58.2,"pct_ftd":52.3,"avg_days_to_ftd":5.5,"active_30d":2116,"active_7d":1773,"deliveries_30d":585647,"w7_retention":83.8,"avg_deliveries_per_courier":276.8,"churn_rate":11.7,"churned_count":229,"prev_active":1958,"new_active_couriers":0,"strongest":"RTD conversion","weakest":"Courier retention","treatment":"✅ Optimize & grow","treatment_detail":{"why":"Solid fundamentals (health 93). Focus on scaling volume and efficiency.","actions":["A/B test referral bonus tiers","Expand to new city zones","Launch loyalty milestone rewards"]}},"NOR":{"cc":"NOR","name":"Norway","region":"Nordics","health":43,"grade":"D","scores":{"activation":22,"rtd":46,"retention":58,"engagement":81},"applied":2852,"contract_sent":1193,"signed_contract":840,"rtd":588,"ftd":351,"pct_contract":41.8,"pct_signed":29.5,"pct_rtd":20.6,"pct_ftd":12.3,"avg_days_to_ftd":23.3,"active_30d":4153,"active_7d":2752,"deliveries_30d":759266,"w7_retention":66.3,"avg_deliveries_per_courier":182.8,"churn_rate":19.8,"churned_count":817,"prev_active":4124,"new_active_couriers":0,"strongest":"Weekly engagement","weakest":"Activation rate","treatment":"🚀 Activation campaign","treatment_detail":{"why":"Only 12% of applicants complete their first delivery. Onboarding CRM is critical.","actions":["Send FTD reminder at day 3, 7, 14","Activate earnings guarantee incentive","Peer-matching intro program"]}},"POL":{"cc":"POL","name":"Poland","region":"Central Europe","health":67,"grade":"B","scores":{"activation":62,"rtd":100,"retention":39,"engagement":79},"applied":8611,"contract_sent":7073,"signed_contract":0,"rtd":5682,"ftd":2929,"pct_contract":82.1,"pct_signed":0.0,"pct_rtd":66.0,"pct_ftd":34.0,"avg_days_to_ftd":10.6,"active_30d":9043,"active_7d":5942,"deliveries_30d":840769,"w7_retention":65.7,"avg_deliveries_per_courier":93.0,"churn_rate":26.5,"churned_count":2394,"prev_active":9028,"new_active_couriers":0,"strongest":"RTD conversion","weakest":"Courier retention","treatment":"🔄 Retention program","treatment_detail":{"why":"26% monthly churn. Active couriers are leaving — earnings or experience issues.","actions":["Launch re-engagement campaign at 14d inactivity","Earnings review for churned segment","Schedule feedback survey"]}},"ROU":{"cc":"ROU","name":"Romania","region":"South Europe","health":87,"grade":"A","scores":{"activation":100,"rtd":100,"retention":54,"engagement":87},"applied":5259,"contract_sent":3475,"signed_contract":0,"rtd":3473,"ftd":2890,"pct_contract":66.1,"pct_signed":0.0,"pct_rtd":66.0,"pct_ftd":55.0,"avg_days_to_ftd":4.2,"active_30d":7489,"active_7d":5175,"deliveries_30d":1129453,"w7_retention":69.1,"avg_deliveries_per_courier":150.8,"churn_rate":21.2,"churned_count":1568,"prev_active":7389,"new_active_couriers":0,"strongest":"Activation rate","weakest":"Courier retention","treatment":"✅ Optimize & grow","treatment_detail":{"why":"Solid fundamentals (health 87). Focus on scaling volume and efficiency.","actions":["A/B test referral bonus tiers","Expand to new city zones","Launch loyalty milestone rewards"]}},"SRB":{"cc":"SRB","name":"Serbia","region":"South Europe","health":82,"grade":"A","scores":{"activation":83,"rtd":100,"retention":57,"engagement":97},"applied":3374,"contract_sent":3260,"signed_contract":0,"rtd":1840,"ftd":1540,"pct_contract":96.6,"pct_signed":0.0,"pct_rtd":54.5,"pct_ftd":45.6,"avg_days_to_ftd":4.5,"active_30d":5277,"active_7d":3877,"deliveries_30d":1584282,"w7_retention":73.5,"avg_deliveries_per_courier":300.2,"churn_rate":20.1,"churned_count":1075,"prev_active":5339,"new_active_couriers":0,"strongest":"RTD conversion","weakest":"Courier retention","treatment":"✅ Optimize & grow","treatment_detail":{"why":"Solid fundamentals (health 82). Focus on scaling volume and efficiency.","actions":["A/B test referral bonus tiers","Expand to new city zones","Launch loyalty milestone rewards"]}},"SVK":{"cc":"SVK","name":"Slovakia","region":"Central Europe","health":55,"grade":"C","scores":{"activation":36,"rtd":69,"retention":58,"engagement":94},"applied":2647,"contract_sent":2297,"signed_contract":287,"rtd":817,"ftd":520,"pct_contract":86.8,"pct_signed":10.8,"pct_rtd":30.9,"pct_ftd":19.6,"avg_days_to_ftd":14.0,"active_30d":3129,"active_7d":2262,"deliveries_30d":549305,"w7_retention":72.3,"avg_deliveries_per_courier":175.6,"churn_rate":19.6,"churned_count":610,"prev_active":3117,"new_active_couriers":0,"strongest":"Weekly engagement","weakest":"Activation rate","treatment":"🚀 Activation campaign","treatment_detail":{"why":"Only 20% of applicants complete their first delivery. Onboarding CRM is critical.","actions":["Send FTD reminder at day 3, 7, 14","Activate earnings guarantee incentive","Peer-matching intro program"]}},"SVN":{"cc":"SVN","name":"Slovenia","region":"Central Europe","health":61,"grade":"C","scores":{"activation":41,"rtd":76,"retention":64,"engagement":95},"applied":1337,"contract_sent":769,"signed_contract":516,"rtd":454,"ftd":305,"pct_contract":57.5,"pct_signed":38.6,"pct_rtd":34.0,"pct_ftd":22.8,"avg_days_to_ftd":18.4,"active_30d":1974,"active_7d":1433,"deliveries_30d":368391,"w7_retention":72.6,"avg_deliveries_per_courier":186.6,"churn_rate":17.6,"churned_count":342,"prev_active":1943,"new_active_couriers":0,"strongest":"Weekly engagement","weakest":"Activation rate","treatment":"✅ Optimize & grow","treatment_detail":{"why":"Solid fundamentals (health 61). Focus on scaling volume and efficiency.","actions":["A/B test referral bonus tiers","Expand to new city zones","Launch loyalty milestone rewards"]}},"SWE":{"cc":"SWE","name":"Sweden","region":"Nordics","health":38,"grade":"D","scores":{"activation":18,"rtd":46,"retention":43,"engagement":83},"applied":3170,"contract_sent":1461,"signed_contract":68,"rtd":660,"ftd":312,"pct_contract":46.1,"pct_signed":2.1,"pct_rtd":20.8,"pct_ftd":9.8,"avg_days_to_ftd":23.6,"active_30d":4151,"active_7d":2800,"deliveries_30d":532459,"w7_retention":67.5,"avg_deliveries_per_courier":128.3,"churn_rate":24.8,"churned_count":1120,"prev_active":4513,"new_active_couriers":0,"strongest":"Weekly engagement","weakest":"Activation rate","treatment":"🚀 Activation campaign","treatment_detail":{"why":"Only 10% of applicants complete their first delivery. Onboarding CRM is critical.","actions":["Send FTD reminder at day 3, 7, 14","Activate earnings guarantee incentive","Peer-matching intro program"]}},"XKX":{"cc":"XKX","name":"Kosovo","region":"South Europe","health":78,"grade":"B","scores":{"activation":97,"rtd":100,"retention":19,"engagement":100},"applied":950,"contract_sent":604,"signed_contract":0,"rtd":602,"ftd":504,"pct_contract":63.6,"pct_signed":0.0,"pct_rtd":63.4,"pct_ftd":53.1,"avg_days_to_ftd":1.5,"active_30d":646,"active_7d":504,"deliveries_30d":171774,"w7_retention":78.0,"avg_deliveries_per_courier":265.9,"churn_rate":33.5,"churned_count":213,"prev_active":636,"new_active_couriers":0,"strongest":"RTD conversion","weakest":"Courier retention","treatment":"🔄 Retention program","treatment_detail":{"why":"34% monthly churn. Active couriers are leaving — earnings or experience issues.","actions":["Launch re-engagement campaign at 14d inactivity","Earnings review for churned segment","Schedule feedback survey"]}}};
+<!-- ===== COUNTRY DETAIL MODAL ===== -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modalContent">
+    <button class="modal-close" onclick="closeModalBtn()">✕</button>
+    <div class="modal-header" id="modalHeader"></div>
+    <div class="modal-grid" id="modalGrid"></div>
+    <div id="modalTreatment"></div>
+  </div>
+</div>
 
-// ---- State ----
-let currentPeriod = '90d';
+<script>
+const RAW = {"FIN":{"cc":"FIN","name":"Finland","flag":"🇫🇮","region":"Nordics","health":46,"grade":"D","scores":{"contract":0,"rtd":6,"activation":4,"m1_ret":99,"m2_ret":100,"churn":95},"applied":5527,"contract_sent":232,"signed_contract":90,"rtd":140,"ftd":130,"pct_contract":4.2,"pct_rtd":2.5,"pct_ftd":2.4,"avg_days_to_ftd":8.3,"active_30d":6720,"active_7d":5725,"deliveries_30d":0,"w7_retention":85.2,"avg_deliveries":0.0,"churn_rate":6.8,"churned_count":466,"prev_active":6899,"curr_active":6720,"new_active":287,"m0_stock":75,"m1_size":189,"m1_ret":89.4,"m2_size":368,"m2_ret":88.6,"strongest":"M2 retention","weakest":"Contract funnel","treatment":"📋 Contract flow fix","treatment_detail":{"why":"Only 4% of applicants receive a contract. Review approval process.","actions":["Automate contract dispatch < 24h","Rejection feedback messaging","Fast-track for high-demand cities"]}},"SWE":{"cc":"SWE","name":"Sweden","flag":"🇸🇪","region":"Nordics","health":45,"grade":"D","scores":{"contract":43,"rtd":48,"activation":18,"m1_ret":63,"m2_ret":63,"churn":43},"applied":3160,"contract_sent":1447,"signed_contract":67,"rtd":686,"ftd":309,"pct_contract":45.8,"pct_rtd":21.7,"pct_ftd":9.8,"avg_days_to_ftd":23.6,"active_30d":4109,"active_7d":2807,"deliveries_30d":0,"w7_retention":68.3,"avg_deliveries":0.0,"churn_rate":25.1,"churned_count":1118,"prev_active":4452,"curr_active":4109,"new_active":775,"m0_stock":260,"m1_size":290,"m1_ret":71.7,"m2_size":387,"m2_ret":51.7,"strongest":"M1 retention","weakest":"Activation (FTD)","treatment":"🚀 Activation campaign","treatment_detail":{"why":"Only 10% of applicants activate. Onboarding friction is blocking FTDs.","actions":["FTD reminder sequence at day 3/7/14","Earnings guarantee for first 5 deliveries","Peer intro matching"]}},"NOR":{"cc":"NOR","name":"Norway","flag":"🇳🇴","region":"Nordics","health":48,"grade":"D","scores":{"contract":36,"rtd":45,"activation":21,"m1_ret":69,"m2_ret":71,"churn":53},"applied":2852,"contract_sent":1194,"signed_contract":833,"rtd":574,"ftd":335,"pct_contract":41.9,"pct_rtd":20.1,"pct_ftd":11.7,"avg_days_to_ftd":23.1,"active_30d":4081,"active_7d":2729,"deliveries_30d":0,"w7_retention":66.9,"avg_deliveries":0.0,"churn_rate":21.3,"churned_count":877,"prev_active":4124,"curr_active":4081,"new_active":834,"m0_stock":383,"m1_size":312,"m1_ret":74.4,"m2_size":307,"m2_ret":55.4,"strongest":"M2 retention","weakest":"Activation (FTD)","treatment":"🚀 Activation campaign","treatment_detail":{"why":"Only 12% of applicants activate. Onboarding friction is blocking FTDs.","actions":["FTD reminder sequence at day 3/7/14","Earnings guarantee for first 5 deliveries","Peer intro matching"]}},"DNK":{"cc":"DNK","name":"Denmark","flag":"🇩🇰","region":"Nordics","health":54,"grade":"C","scores":{"contract":54,"rtd":72,"activation":33,"m1_ret":58,"m2_ret":57,"churn":53},"applied":5371,"contract_sent":2819,"signed_contract":2194,"rtd":1751,"ftd":973,"pct_contract":52.5,"pct_rtd":32.6,"pct_ftd":18.1,"avg_days_to_ftd":18.1,"active_30d":9066,"active_7d":6040,"deliveries_30d":0,"w7_retention":66.6,"avg_deliveries":0.0,"churn_rate":21.4,"churned_count":1925,"prev_active":9004,"curr_active":9066,"new_active":1987,"m0_stock":1087,"m1_size":944,"m1_ret":69.2,"m2_size":781,"m2_ret":48.4,"strongest":"RTD conversion","weakest":"Activation (FTD)","treatment":"🚀 Activation campaign","treatment_detail":{"why":"Only 18% of applicants activate. Onboarding friction is blocking FTDs.","actions":["FTD reminder sequence at day 3/7/14","Earnings guarantee for first 5 deliveries","Peer intro matching"]}},"ISL":{"cc":"ISL","name":"Iceland","flag":"🇮🇸","region":"Nordics","health":38,"grade":"D","scores":{"contract":0,"rtd":18,"activation":5,"m1_ret":55,"m2_ret":100,"churn":71},"applied":397,"contract_sent":54,"signed_contract":42,"rtd":32,"ftd":10,"pct_contract":13.6,"pct_rtd":8.1,"pct_ftd":2.5,"avg_days_to_ftd":30.9,"active_30d":438,"active_7d":332,"deliveries_30d":0,"w7_retention":75.8,"avg_deliveries":0.0,"churn_rate":15.3,"churned_count":62,"prev_active":406,"curr_active":438,"new_active":94,"m0_stock":49,"m1_size":34,"m1_ret":67.6,"m2_size":11,"m2_ret":72.7,"strongest":"M2 retention","weakest":"Contract funnel","treatment":"📋 Contract flow fix","treatment_detail":{"why":"Only 14% of applicants receive a contract. Review approval process.","actions":["Automate contract dispatch < 24h","Rejection feedback messaging","Fast-track for high-demand cities"]}},"DEU":{"cc":"DEU","name":"Germany","flag":"🇩🇪","region":"Central Europe","health":87,"grade":"A","scores":{"contract":100,"rtd":100,"activation":98,"m1_ret":99,"m2_ret":63,"churn":28},"applied":8386,"contract_sent":8320,"signed_contract":1,"rtd":4990,"ftd":4541,"pct_contract":99.2,"pct_rtd":59.5,"pct_ftd":54.1,"avg_days_to_ftd":2.7,"active_30d":8212,"active_7d":7013,"deliveries_30d":0,"w7_retention":85.4,"avg_deliveries":0.0,"churn_rate":30.3,"churned_count":2721,"prev_active":8991,"curr_active":8212,"new_active":1942,"m0_stock":1926,"m1_size":2018,"m1_ret":89.6,"m2_size":823,"m2_ret":51.6,"strongest":"Contract funnel","weakest":"Churn control","treatment":"🔄 Retention program","treatment_detail":{"why":"30% monthly churn. Established couriers are leaving.","actions":["Re-engage inactive couriers at 14d","Loyalty rewards at 6-month milestone","Earnings audit vs market benchmark"]}},"AUT":{"cc":"AUT","name":"Austria","flag":"🇦🇹","region":"Central Europe","health":46,"grade":"D","scores":{"contract":16,"rtd":13,"activation":5,"m1_ret":85,"m2_ret":100,"churn":84},"applied":1590,"contract_sent":473,"signed_contract":153,"rtd":95,"ftd":48,"pct_contract":29.7,"pct_rtd":6.0,"pct_ftd":3.0,"avg_days_to_ftd":35.9,"active_30d":1319,"active_7d":1054,"deliveries_30d":0,"w7_retention":79.9,"avg_deliveries":0.0,"churn_rate":10.7,"churned_count":143,"prev_active":1339,"curr_active":1319,"new_active":123,"m0_stock":85,"m1_size":120,"m1_ret":82.5,"m2_size":135,"m2_ret":80.0,"strongest":"M2 retention","weakest":"Activation (FTD)","treatment":"🚀 Activation campaign","treatment_detail":{"why":"Only 3% of applicants activate. Onboarding friction is blocking FTDs.","actions":["FTD reminder sequence at day 3/7/14","Earnings guarantee for first 5 deliveries","Peer intro matching"]}},"LUX":{"cc":"LUX","name":"Luxembourg","flag":"🇱🇺","region":"Central Europe","health":46,"grade":"D","scores":{"contract":0,"rtd":6,"activation":3,"m1_ret":100,"m2_ret":100,"churn":91},"applied":784,"contract_sent":142,"signed_contract":52,"rtd":23,"ftd":14,"pct_contract":18.1,"pct_rtd":2.9,"pct_ftd":1.8,"avg_days_to_ftd":33.9,"active_30d":686,"active_7d":586,"deliveries_30d":0,"w7_retention":85.4,"avg_deliveries":0.0,"churn_rate":8.3,"churned_count":53,"prev_active":635,"curr_active":686,"new_active":104,"m0_stock":79,"m1_size":49,"m1_ret":93.9,"m2_size":38,"m2_ret":86.8,"strongest":"M1 retention","weakest":"Contract funnel","treatment":"📋 Contract flow fix","treatment_detail":{"why":"Only 18% of applicants receive a contract. Review approval process.","actions":["Automate contract dispatch < 24h","Rejection feedback messaging","Fast-track for high-demand cities"]}},"CZE":{"cc":"CZE","name":"Czech Republic","flag":"🇨🇿","region":"Central Europe","health":64,"grade":"C","scores":{"contract":100,"rtd":84,"activation":45,"m1_ret":57,"m2_ret":59,"churn":51},"applied":6869,"contract_sent":6617,"signed_contract":1362,"rtd":2611,"ftd":1719,"pct_contract":96.3,"pct_rtd":38.0,"pct_ftd":25.0,"avg_days_to_ftd":14.0,"active_30d":8602,"active_7d":5796,"deliveries_30d":0,"w7_retention":67.4,"avg_deliveries":0.0,"churn_rate":22.1,"churned_count":1846,"prev_active":8341,"curr_active":8602,"new_active":2107,"m0_stock":1178,"m1_size":955,"m1_ret":68.3,"m2_size":891,"m2_ret":49.5,"strongest":"Contract funnel","weakest":"Activation (FTD)","treatment":"✅ Optimize & scale","treatment_detail":{"why":"Solid lifecycle (health 64). Focus on volume growth and efficiency gains.","actions":["Scale referral bonus program","A/B test onboarding email sequence","Expand to adjacent city zones"]}},"SVK":{"cc":"SVK","name":"Slovakia","flag":"🇸🇰","region":"Central Europe","health":62,"grade":"C","scores":{"contract":100,"rtd":69,"activation":35,"m1_ret":68,"m2_ret":68,"churn":57},"applied":2666,"contract_sent":2306,"signed_contract":289,"rtd":832,"ftd":514,"pct_contract":86.5,"pct_rtd":31.2,"pct_ftd":19.3,"avg_days_to_ftd":13.7,"active_30d":3098,"active_7d":2220,"deliveries_30d":0,"w7_retention":71.7,"avg_deliveries":0.0,"churn_rate":20.1,"churned_count":618,"prev_active":3071,"curr_active":3098,"new_active":645,"m0_stock":341,"m1_size":360,"m1_ret":74.2,"m2_size":253,"m2_ret":54.2,"strongest":"Contract funnel","weakest":"Activation (FTD)","treatment":"🚀 Activation campaign","treatment_detail":{"why":"Only 19% of applicants activate. Onboarding friction is blocking FTDs.","actions":["FTD reminder sequence at day 3/7/14","Earnings guarantee for first 5 deliveries","Peer intro matching"]}},"POL":{"cc":"POL","name":"Poland","flag":"🇵🇱","region":"Central Europe","health":62,"grade":"C","scores":{"contract":100,"rtd":100,"activation":63,"m1_ret":37,"m2_ret":36,"churn":37},"applied":8702,"contract_sent":7187,"signed_contract":0,"rtd":5928,"ftd":3000,"pct_contract":82.6,"pct_rtd":68.1,"pct_ftd":34.5,"avg_days_to_ftd":10.2,"active_30d":9085,"active_7d":6022,"deliveries_30d":0,"w7_retention":66.3,"avg_deliveries":0.0,"churn_rate":27.0,"churned_count":2422,"prev_active":8979,"curr_active":9085,"new_active":2528,"m0_stock":1653,"m1_size":1743,"m1_ret":58.3,"m2_size":1095,"m2_ret":38.2,"strongest":"Contract funnel","weakest":"M2 retention","treatment":"🌱 Early retention program","treatment_detail":{"why":"M2 retention is 38%. New couriers are dropping off after FTD.","actions":["Week 2 check-in message (earnings recap)","Gamified milestone at 10/25/50 deliveries","Re-engagement at day 14 inactivity"]}},"HUN":{"cc":"HUN","name":"Hungary","flag":"🇭🇺","region":"Central Europe","health":66,"grade":"B","scores":{"contract":100,"rtd":60,"activation":36,"m1_ret":77,"m2_ret":91,"churn":58},"applied":6927,"contract_sent":5667,"signed_contract":1230,"rtd":1853,"ftd":1363,"pct_contract":81.8,"pct_rtd":26.8,"pct_ftd":19.7,"avg_days_to_ftd":15.4,"active_30d":10862,"active_7d":7642,"deliveries_30d":0,"w7_retention":70.4,"avg_deliveries":0.0,"churn_rate":19.6,"churned_count":2093,"prev_active":10705,"curr_active":10862,"new_active":2250,"m0_stock":927,"m1_size":915,"m1_ret":78.6,"m2_size":967,"m2_ret":65.7,"strongest":"Contract funnel","weakest":"Activation (FTD)","treatment":"🚀 Activation campaign","treatment_detail":{"why":"Only 20% of applicants activate. Onboarding friction is blocking FTDs.","actions":["FTD reminder sequence at day 3/7/14","Earnings guarantee for first 5 deliveries","Peer intro matching"]}},"HRV":{"cc":"HRV","name":"Croatia","flag":"🇭🇷","region":"Central Europe","health":74,"grade":"B","scores":{"contract":85,"rtd":74,"activation":49,"m1_ret":93,"m2_ret":73,"churn":84},"applied":1561,"contract_sent":1107,"signed_contract":83,"rtd":521,"ftd":424,"pct_contract":70.9,"pct_rtd":33.4,"pct_ftd":27.2,"avg_days_to_ftd":8.5,"active_30d":2567,"active_7d":2171,"deliveries_30d":0,"w7_retention":84.6,"avg_deliveries":0.0,"churn_rate":10.5,"churned_count":266,"prev_active":2523,"curr_active":2567,"new_active":310,"m0_stock":205,"m1_size":193,"m1_ret":86.5,"m2_size":138,"m2_ret":56.5,"strongest":"M1 retention","weakest":"Activation (FTD)","treatment":"✅ Optimize & scale","treatment_detail":{"why":"Solid lifecycle (health 74). Focus on volume growth and efficiency gains.","actions":["Scale referral bonus program","A/B test onboarding email sequence","Expand to adjacent city zones"]}},"SVN":{"cc":"SVN","name":"Slovenia","flag":"🇸🇮","region":"Central Europe","health":63,"grade":"C","scores":{"contract":61,"rtd":76,"activation":40,"m1_ret":76,"m2_ret":65,"churn":63},"applied":1350,"contract_sent":766,"signed_contract":516,"rtd":461,"ftd":300,"pct_contract":56.7,"pct_rtd":34.1,"pct_ftd":22.2,"avg_days_to_ftd":17.8,"active_30d":1975,"active_7d":1414,"deliveries_30d":0,"w7_retention":71.6,"avg_deliveries":0.0,"churn_rate":18.0,"churned_count":349,"prev_active":1940,"curr_active":1975,"new_active":384,"m0_stock":209,"m1_size":164,"m1_ret":78.0,"m2_size":172,"m2_ret":52.3,"strongest":"M1 retention","weakest":"Activation (FTD)","treatment":"✅ Optimize & scale","treatment_detail":{"why":"Solid lifecycle (health 63). Focus on volume growth and efficiency gains.","actions":["Scale referral bonus program","A/B test onboarding email sequence","Expand to adjacent city zones"]}},"GRC":{"cc":"GRC","name":"Greece","flag":"🇬🇷","region":"South Europe","health":72,"grade":"B","scores":{"contract":56,"rtd":70,"activation":50,"m1_ret":90,"m2_ret":100,"churn":73},"applied":6880,"contract_sent":3676,"signed_contract":1550,"rtd":2182,"ftd":1875,"pct_contract":53.4,"pct_rtd":31.7,"pct_ftd":27.3,"avg_days_to_ftd":11.5,"active_30d":17307,"active_7d":13194,"deliveries_30d":0,"w7_retention":76.2,"avg_deliveries":0.0,"churn_rate":14.6,"churned_count":2584,"prev_active":17752,"curr_active":17307,"new_active":2139,"m0_stock":960,"m1_size":1275,"m1_ret":84.9,"m2_size":1318,"m2_ret":76.2,"strongest":"M2 retention","weakest":"Activation (FTD)","treatment":"✅ Optimize & scale","treatment_detail":{"why":"Solid lifecycle (health 72). Focus on volume growth and efficiency gains.","actions":["Scale referral bonus program","A/B test onboarding email sequence","Expand to adjacent city zones"]}},"CYP":{"cc":"CYP","name":"Cyprus","flag":"🇨🇾","region":"South Europe","health":78,"grade":"B","scores":{"contract":64,"rtd":75,"activation":54,"m1_ret":100,"m2_ret":100,"churn":83},"applied":2134,"contract_sent":1250,"signed_contract":275,"rtd":723,"ftd":630,"pct_contract":58.6,"pct_rtd":33.9,"pct_ftd":29.5,"avg_days_to_ftd":7.8,"active_30d":3694,"active_7d":2999,"deliveries_30d":0,"w7_retention":81.2,"avg_deliveries":0.0,"churn_rate":11.0,"churned_count":410,"prev_active":3734,"curr_active":3694,"new_active":370,"m0_stock":234,"m1_size":245,"m1_ret":91.4,"m2_size":356,"m2_ret":77.0,"strongest":"M1 retention","weakest":"Activation (FTD)","treatment":"✅ Optimize & scale","treatment_detail":{"why":"Solid lifecycle (health 78). Focus on volume growth and efficiency gains.","actions":["Scale referral bonus program","A/B test onboarding email sequence","Expand to adjacent city zones"]}},"MLT":{"cc":"MLT","name":"Malta","flag":"🇲🇹","region":"South Europe","health":96,"grade":"A","scores":{"contract":97,"rtd":100,"activation":96,"m1_ret":100,"m2_ret":100,"churn":78},"applied":1275,"contract_sent":994,"signed_contract":73,"rtd":744,"ftd":672,"pct_contract":78.0,"pct_rtd":58.4,"pct_ftd":52.7,"avg_days_to_ftd":5.4,"active_30d":2095,"active_7d":1771,"deliveries_30d":0,"w7_retention":84.5,"avg_deliveries":0.0,"churn_rate":12.8,"churned_count":251,"prev_active":1956,"curr_active":2095,"new_active":390,"m0_stock":293,"m1_size":229,"m1_ret":90.8,"m2_size":260,"m2_ret":81.9,"strongest":"RTD conversion","weakest":"Churn control","treatment":"✅ Optimize & scale","treatment_detail":{"why":"Solid lifecycle (health 96). Focus on volume growth and efficiency gains.","actions":["Scale referral bonus program","A/B test onboarding email sequence","Expand to adjacent city zones"]}},"SRB":{"cc":"SRB","name":"Serbia","flag":"🇷🇸","region":"South Europe","health":80,"grade":"A","scores":{"contract":100,"rtd":100,"activation":82,"m1_ret":66,"m2_ret":73,"churn":55},"applied":3517,"contract_sent":3396,"signed_contract":0,"rtd":1996,"ftd":1585,"pct_contract":96.6,"pct_rtd":56.8,"pct_ftd":45.1,"avg_days_to_ftd":4.6,"active_30d":5260,"active_7d":3779,"deliveries_30d":0,"w7_retention":71.8,"avg_deliveries":0.0,"churn_rate":20.8,"churned_count":1095,"prev_active":5268,"curr_active":5260,"new_active":1087,"m0_stock":719,"m1_size":661,"m1_ret":72.8,"m2_size":536,"m2_ret":56.3,"strongest":"Contract funnel","weakest":"Churn control","treatment":"✅ Optimize & scale","treatment_detail":{"why":"Solid lifecycle (health 80). Focus on volume growth and efficiency gains.","actions":["Scale referral bonus program","A/B test onboarding email sequence","Expand to adjacent city zones"]}},"MKD":{"cc":"MKD","name":"North Macedonia","flag":"🇲🇰","region":"South Europe","health":68,"grade":"B","scores":{"contract":100,"rtd":52,"activation":36,"m1_ret":86,"m2_ret":100,"churn":58},"applied":1882,"contract_sent":1826,"signed_contract":0,"rtd":442,"ftd":377,"pct_contract":97.0,"pct_rtd":23.5,"pct_ftd":20.0,"avg_days_to_ftd":8.5,"active_30d":1476,"active_7d":1086,"deliveries_30d":0,"w7_retention":73.6,"avg_deliveries":0.0,"churn_rate":19.6,"churned_count":308,"prev_active":1572,"curr_active":1476,"new_active":212,"m0_stock":137,"m1_size":216,"m1_ret":82.9,"m2_size":291,"m2_ret":76.3,"strongest":"Contract funnel","weakest":"Activation (FTD)","treatment":"🚀 Activation campaign","treatment_detail":{"why":"Only 20% of applicants activate. Onboarding friction is blocking FTDs.","actions":["FTD reminder sequence at day 3/7/14","Earnings guarantee for first 5 deliveries","Peer intro matching"]}},"ALB":{"cc":"ALB","name":"Albania","flag":"🇦🇱","region":"South Europe","health":83,"grade":"A","scores":{"contract":59,"rtd":100,"activation":91,"m1_ret":84,"m2_ret":76,"churn":60},"applied":1122,"contract_sent":622,"signed_contract":0,"rtd":604,"ftd":563,"pct_contract":55.4,"pct_rtd":53.8,"pct_ftd":50.2,"avg_days_to_ftd":1.6,"active_30d":1253,"active_7d":1067,"deliveries_30d":0,"w7_retention":85.2,"avg_deliveries":0.0,"churn_rate":19.0,"churned_count":242,"prev_active":1271,"curr_active":1253,"new_active":224,"m0_stock":196,"m1_size":188,"m1_ret":81.9,"m2_size":203,"m2_ret":58.1,"strongest":"RTD conversion","weakest":"Contract funnel","treatment":"✅ Optimize & scale","treatment_detail":{"why":"Solid lifecycle (health 83). Focus on volume growth and efficiency gains.","actions":["Scale referral bonus program","A/B test onboarding email sequence","Expand to adjacent city zones"]}},"XKX":{"cc":"XKX","name":"Kosovo","flag":"🇽🇰","region":"South Europe","health":66,"grade":"B","scores":{"contract":73,"rtd":100,"activation":95,"m1_ret":52,"m2_ret":21,"churn":17},"applied":939,"contract_sent":602,"signed_contract":0,"rtd":600,"ftd":492,"pct_contract":64.1,"pct_rtd":63.9,"pct_ftd":52.4,"avg_days_to_ftd":1.6,"active_30d":645,"active_7d":504,"deliveries_30d":0,"w7_retention":78.1,"avg_deliveries":0.0,"churn_rate":34.1,"churned_count":212,"prev_active":622,"curr_active":645,"new_active":235,"m0_stock":205,"m1_size":133,"m1_ret":66.2,"m2_size":187,"m2_ret":30.5,"strongest":"RTD conversion","weakest":"Churn control","treatment":"🔄 Retention program","treatment_detail":{"why":"34% monthly churn. Established couriers are leaving.","actions":["Re-engage inactive couriers at 14d","Loyalty rewards at 6-month milestone","Earnings audit vs market benchmark"]}},"BGR":{"cc":"BGR","name":"Bulgaria","flag":"🇧🇬","region":"South Europe","health":62,"grade":"C","scores":{"contract":29,"rtd":83,"activation":53,"m1_ret":73,"m2_ret":62,"churn":48},"applied":1283,"contract_sent":478,"signed_contract":0,"rtd":478,"ftd":377,"pct_contract":37.3,"pct_rtd":37.3,"pct_ftd":29.4,"avg_days_to_ftd":7.3,"active_30d":761,"active_7d":565,"deliveries_30d":0,"w7_retention":74.2,"avg_deliveries":0.0,"churn_rate":23.2,"churned_count":171,"prev_active":736,"curr_active":761,"new_active":196,"m0_stock":163,"m1_size":183,"m1_ret":76.5,"m2_size":135,"m2_ret":51.1,"strongest":"RTD conversion","weakest":"Contract funnel","treatment":"📋 Contract flow fix","treatment_detail":{"why":"Only 37% of applicants receive a contract. Review approval process.","actions":["Automate contract dispatch < 24h","Rejection feedback messaging","Fast-track for high-demand cities"]}},"ROU":{"cc":"ROU","name":"Romania","flag":"🇷🇴","region":"South Europe","health":82,"grade":"A","scores":{"contract":79,"rtd":100,"activation":99,"m1_ret":66,"m2_ret":74,"churn":52},"applied":5419,"contract_sent":3644,"signed_contract":0,"rtd":3642,"ftd":2952,"pct_contract":67.2,"pct_rtd":67.2,"pct_ftd":54.5,"avg_days_to_ftd":4.1,"active_30d":7497,"active_7d":5206,"deliveries_30d":0,"w7_retention":69.4,"avg_deliveries":0.0,"churn_rate":21.9,"churned_count":1603,"prev_active":7323,"curr_active":7497,"new_active":1777,"m0_stock":1292,"m1_size":1269,"m1_ret":72.9,"m2_size":869,"m2_ret":57.2,"strongest":"RTD conversion","weakest":"Churn control","treatment":"✅ Optimize & scale","treatment_detail":{"why":"Solid lifecycle (health 82). Focus on volume growth and efficiency gains.","actions":["Scale referral bonus program","A/B test onboarding email sequence","Expand to adjacent city zones"]}},"EST":{"cc":"EST","name":"Estonia","flag":"🇪🇪","region":"Baltics","health":63,"grade":"C","scores":{"contract":83,"rtd":100,"activation":53,"m1_ret":57,"m2_ret":39,"churn":43},"applied":2511,"contract_sent":1747,"signed_contract":1454,"rtd":1245,"ftd":736,"pct_contract":69.6,"pct_rtd":49.6,"pct_ftd":29.3,"avg_days_to_ftd":15.8,"active_30d":2813,"active_7d":1841,"deliveries_30d":0,"w7_retention":65.4,"avg_deliveries":0.0,"churn_rate":25.0,"churned_count":667,"prev_active":2671,"curr_active":2813,"new_active":809,"m0_stock":526,"m1_size":383,"m1_ret":68.7,"m2_size":284,"m2_ret":39.4,"strongest":"RTD conversion","weakest":"M2 retention","treatment":"🌱 Early retention program","treatment_detail":{"why":"M2 retention is 39%. New couriers are dropping off after FTD.","actions":["Week 2 check-in message (earnings recap)","Gamified milestone at 10/25/50 deliveries","Re-engagement at day 14 inactivity"]}},"LVA":{"cc":"LVA","name":"Latvia","flag":"🇱🇻","region":"Baltics","health":71,"grade":"B","scores":{"contract":70,"rtd":68,"activation":47,"m1_ret":93,"m2_ret":91,"churn":62},"applied":1339,"contract_sent":832,"signed_contract":493,"rtd":412,"ftd":346,"pct_contract":62.1,"pct_rtd":30.8,"pct_ftd":25.8,"avg_days_to_ftd":17.7,"active_30d":2397,"active_7d":1704,"deliveries_30d":0,"w7_retention":71.1,"avg_deliveries":0.0,"churn_rate":18.4,"churned_count":451,"prev_active":2452,"curr_active":2397,"new_active":396,"m0_stock":257,"m1_size":191,"m1_ret":86.4,"m2_size":156,"m2_ret":65.4,"strongest":"M1 retention","weakest":"Activation (FTD)","treatment":"✅ Optimize & scale","treatment_detail":{"why":"Solid lifecycle (health 71). Focus on volume growth and efficiency gains.","actions":["Scale referral bonus program","A/B test onboarding email sequence","Expand to adjacent city zones"]}},"LTU":{"cc":"LTU","name":"Lithuania","flag":"🇱🇹","region":"Baltics","health":62,"grade":"C","scores":{"contract":49,"rtd":64,"activation":42,"m1_ret":74,"m2_ret":83,"churn":66},"applied":1807,"contract_sent":892,"signed_contract":644,"rtd":522,"ftd":421,"pct_contract":49.4,"pct_rtd":28.9,"pct_ftd":23.3,"avg_days_to_ftd":12.6,"active_30d":3657,"active_7d":2797,"deliveries_30d":0,"w7_retention":76.5,"avg_deliveries":0.0,"churn_rate":17.0,"churned_count":651,"prev_active":3832,"curr_active":3657,"new_active":476,"m0_stock":197,"m1_size":259,"m1_ret":76.8,"m2_size":210,"m2_ret":61.4,"strongest":"M2 retention","weakest":"Activation (FTD)","treatment":"✅ Optimize & scale","treatment_detail":{"why":"Solid lifecycle (health 62). Focus on volume growth and efficiency gains.","actions":["Scale referral bonus program","A/B test onboarding email sequence","Expand to adjacent city zones"]}},"ISR":{"cc":"ISR","name":"Israel","flag":"🇮🇱","region":"Middle East","health":56,"grade":"C","scores":{"contract":28,"rtd":37,"activation":23,"m1_ret":88,"m2_ret":99,"churn":74},"applied":13261,"contract_sent":4841,"signed_contract":2589,"rtd":2226,"ftd":1688,"pct_contract":36.5,"pct_rtd":16.8,"pct_ftd":12.7,"avg_days_to_ftd":21.2,"active_30d":25727,"active_7d":19783,"deliveries_30d":0,"w7_retention":76.9,"avg_deliveries":0.0,"churn_rate":14.2,"churned_count":3552,"prev_active":25079,"curr_active":25727,"new_active":4200,"m0_stock":1863,"m1_size":1844,"m1_ret":84.2,"m2_size":1520,"m2_ret":69.5,"strongest":"M2 retention","weakest":"Activation (FTD)","treatment":"🚀 Activation campaign","treatment_detail":{"why":"Only 13% of applicants activate. Onboarding friction is blocking FTDs.","actions":["FTD reminder sequence at day 3/7/14","Earnings guarantee for first 5 deliveries","Peer intro matching"]}},"GEO":{"cc":"GEO","name":"Georgia","flag":"🇬🇪","region":"Caucasus","health":70,"grade":"B","scores":{"contract":81,"rtd":63,"activation":47,"m1_ret":82,"m2_ret":95,"churn":71},"applied":5285,"contract_sent":3627,"signed_contract":1971,"rtd":1504,"ftd":1376,"pct_contract":68.6,"pct_rtd":28.5,"pct_ftd":26.0,"avg_days_to_ftd":10.0,"active_30d":8346,"active_7d":6276,"deliveries_30d":0,"w7_retention":75.2,"avg_deliveries":0.0,"churn_rate":15.2,"churned_count":1227,"prev_active":8065,"curr_active":8346,"new_active":1508,"m0_stock":802,"m1_size":762,"m1_ret":81.0,"m2_size":600,"m2_ret":67.3,"strongest":"M2 retention","weakest":"Activation (FTD)","treatment":"✅ Optimize & scale","treatment_detail":{"why":"Solid lifecycle (health 70). Focus on volume growth and efficiency gains.","actions":["Scale referral bonus program","A/B test onboarding email sequence","Expand to adjacent city zones"]}},"AZE":{"cc":"AZE","name":"Azerbaijan","flag":"🇦🇿","region":"Caucasus","health":51,"grade":"C","scores":{"contract":84,"rtd":100,"activation":54,"m1_ret":19,"m2_ret":24,"churn":21},"applied":9191,"contract_sent":6477,"signed_contract":183,"rtd":4634,"ftd":2736,"pct_contract":70.5,"pct_rtd":50.4,"pct_ftd":29.8,"avg_days_to_ftd":4.8,"active_30d":6242,"active_7d":4230,"deliveries_30d":0,"w7_retention":67.8,"avg_deliveries":0.0,"churn_rate":32.6,"churned_count":2086,"prev_active":6407,"curr_active":6242,"new_active":1921,"m0_stock":1052,"m1_size":970,"m1_ret":49.4,"m2_size":1309,"m2_ret":31.9,"strongest":"RTD conversion","weakest":"M1 retention","treatment":"🌱 Early retention program","treatment_detail":{"why":"M1 retention is 49%. New couriers are dropping off after FTD.","actions":["Week 2 check-in message (earnings recap)","Gamified milestone at 10/25/50 deliveries","Re-engagement at day 14 inactivity"]}},"KAZ":{"cc":"KAZ","name":"Kazakhstan","flag":"🇰🇿","region":"Caucasus","health":45,"grade":"D","scores":{"contract":77,"rtd":67,"activation":44,"m1_ret":32,"m2_ret":35,"churn":9},"applied":23502,"contract_sent":15603,"signed_contract":0,"rtd":7123,"ftd":5694,"pct_contract":66.4,"pct_rtd":30.3,"pct_ftd":24.2,"avg_days_to_ftd":5.1,"active_30d":13080,"active_7d":8497,"deliveries_30d":0,"w7_retention":65.0,"avg_deliveries":0.0,"churn_rate":36.8,"churned_count":5079,"prev_active":13789,"curr_active":13080,"new_active":4370,"m0_stock":3319,"m1_size":2165,"m1_ret":55.8,"m2_size":2152,"m2_ret":37.3,"strongest":"Contract funnel","weakest":"Churn control","treatment":"🔄 Retention program","treatment_detail":{"why":"37% monthly churn. Established couriers are leaving.","actions":["Re-engage inactive couriers at 14d","Loyalty rewards at 6-month milestone","Earnings audit vs market benchmark"]}}};
+
 let currentRegion = '';
 
-function getFilteredCountries() {
+function getFiltered() {
   return Object.values(RAW).filter(d => !currentRegion || d.region === currentRegion);
 }
 
@@ -293,7 +362,6 @@ function showTab(name, el) {
 function setPeriod(el, p) {
   document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
-  currentPeriod = p;
   renderAll();
 }
 
@@ -303,425 +371,492 @@ function applyFilters() {
 }
 
 // ---- Color helpers ----
-function healthColor(h) {
-  if (h >= 80) return '#22c55e';
-  if (h >= 65) return '#84cc16';
-  if (h >= 50) return '#f59e0b';
-  if (h >= 35) return '#f97316';
-  return '#ef4444';
+function hc(h) {
+  return h >= 80 ? '#22c55e' : h >= 65 ? '#84cc16' : h >= 50 ? '#f59e0b' : h >= 35 ? '#f97316' : '#ef4444';
 }
-function gradeColor(g) {
-  const m = {A:'#22c55e',B:'#84cc16',C:'#f59e0b',D:'#f97316',F:'#ef4444'};
-  return m[g] || '#94a3b8';
+function gc(g) {
+  return {A:'#22c55e',B:'#84cc16',C:'#f59e0b',D:'#f97316',F:'#ef4444'}[g] || '#94a3b8';
+}
+function retColor(r) {
+  return r >= 75 ? '#22c55e' : r >= 55 ? '#84cc16' : r >= 40 ? '#f59e0b' : r >= 25 ? '#f97316' : '#ef4444';
+}
+function churnColor(r) {
+  return r <= 12 ? '#22c55e' : r <= 20 ? '#84cc16' : r <= 28 ? '#f59e0b' : r <= 35 ? '#f97316' : '#ef4444';
 }
 
-// ---- Render country cards ----
+// ---- Chart registry ----
+const CHARTS = {};
+function mkChart(id, cfg) {
+  if (CHARTS[id]) CHARTS[id].destroy();
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  CHARTS[id] = new Chart(ctx, cfg);
+}
+const BASE_OPTS = {
+  responsive:true, maintainAspectRatio:true,
+  plugins:{
+    legend:{labels:{color:'#94a3b8',font:{size:10}}},
+    tooltip:{backgroundColor:'#22263a',titleColor:'#e2e8f0',bodyColor:'#94a3b8',borderColor:'#2e3250',borderWidth:1}
+  },
+  scales:{
+    x:{ticks:{color:'#94a3b8',font:{size:10}},grid:{color:'#2e3250'}},
+    y:{ticks:{color:'#94a3b8',font:{size:10}},grid:{color:'#2e3250'}}
+  }
+};
+function deepMerge(a,b){
+  const r={...a};
+  for(const k in b){
+    if(b[k]&&typeof b[k]==='object'&&!Array.isArray(b[k]))r[k]=deepMerge(a[k]||{},b[k]);
+    else r[k]=b[k];
+  }
+  return r;
+}
+function opts(extra={}){return deepMerge(BASE_OPTS,extra);}
+
+// ========================================
+// GLOBAL TAB
+// ========================================
 function renderGlobal() {
-  const countries = getFilteredCountries().sort((a,b) => b.health - a.health);
-  document.getElementById('countLabel').textContent = countries.length + ' countries';
-  const grid = document.getElementById('countryGrid');
-  grid.innerHTML = countries.map(c => {
-    const fillW = c.health;
-    const gc = gradeColor(c.grade);
-    return `<div class="card">
-      <div class="card-cc">${c.cc} · ${c.region}</div>
-      <div class="card-name">${c.name}</div>
-      <div class="health-bar"><div class="health-fill" style="width:${fillW}%;background:${healthColor(c.health)}"></div></div>
-      <div><span class="grade-badge" style="background:${gc}22;color:${gc}">Grade ${c.grade} · ${c.health}/100</span></div>
-      <div class="metrics-row">
-        <div class="metric-item">
-          <div class="metric-label">FTD Rate</div>
-          <div class="metric-value" style="color:${healthColor(c.scores.activation)}">${c.pct_ftd ?? '—'}%</div>
-          <div class="metric-note">${c.ftd} activated</div>
+  const countries = getFiltered().sort((a,b)=>b.health-a.health);
+  document.getElementById('countLabel').textContent = countries.length + ' countries · click any card for details';
+  document.getElementById('countryGrid').innerHTML = countries.map(c => {
+    const g = gc(c.grade);
+    return `<div class="card" onclick="openModal('${c.cc}')">
+      <div class="card-header">
+        <div>
+          <div class="card-cc">${c.cc} · ${c.region}</div>
+          <div class="card-name">${c.flag} ${c.name}</div>
         </div>
-        <div class="metric-item">
-          <div class="metric-label">RTD Rate</div>
-          <div class="metric-value">${c.pct_rtd ?? '—'}%</div>
-          <div class="metric-note">${c.rtd} ready</div>
+        <span class="card-grade" style="background:${g}22;color:${g}">${c.grade} ${c.health}</span>
+      </div>
+      <div class="health-bar"><div class="health-fill" style="width:${c.health}%;background:${hc(c.health)}"></div></div>
+      <div class="kpi-row">
+        <div class="kpi">
+          <div class="kpi-val" style="color:${hc(c.scores.activation)}">${c.pct_ftd??'—'}%</div>
+          <div class="kpi-lbl">FTD rate</div>
         </div>
-        <div class="metric-item">
-          <div class="metric-label">Churn</div>
-          <div class="metric-value" style="color:${c.churn_rate > 25 ? '#ef4444' : c.churn_rate > 15 ? '#f59e0b' : '#22c55e'}">${c.churn_rate ?? '—'}%</div>
-          <div class="metric-note">monthly</div>
+        <div class="kpi">
+          <div class="kpi-val" style="color:${retColor(c.m1_ret??50)}">${c.m1_ret!=null?c.m1_ret+'%':'—'}</div>
+          <div class="kpi-lbl">M1 ret</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-val" style="color:${churnColor(c.churn_rate??20)}">${c.churn_rate!=null?c.churn_rate+'%':'—'}</div>
+          <div class="kpi-lbl">churn</div>
         </div>
       </div>
-      <div class="treatment-tag">${c.treatment}</div>
+      <div class="card-treatment">${c.treatment}</div>
+      <div class="card-hint">↗ click for details</div>
     </div>`;
   }).join('');
 }
 
-// ---- Chart registry ----
-const charts = {};
-function mkChart(id, cfg) {
-  if (charts[id]) charts[id].destroy();
-  const ctx = document.getElementById(id);
-  if (!ctx) return;
-  charts[id] = new Chart(ctx, cfg);
+// ========================================
+// COUNTRY MODAL
+// ========================================
+function openModal(cc) {
+  const c = RAW[cc];
+  if(!c) return;
+  const g = gc(c.grade);
+
+  // Header
+  document.getElementById('modalHeader').innerHTML = `
+    <div class="modal-flag">${c.flag}</div>
+    <div class="modal-title">
+      <h2>${c.name} <span style="color:${g};font-size:.85rem">Grade ${c.grade} · ${c.health}/100</span></h2>
+      <div class="sub">${c.cc} · ${c.region} · Health score: full lifecycle (6 components)</div>
+    </div>`;
+
+  // Score breakdown
+  const scoreItems = [
+    {label:'Contract Funnel', key:'contract', pct:c.pct_contract},
+    {label:'RTD Rate', key:'rtd', pct:c.pct_rtd},
+    {label:'Activation (FTD)', key:'activation', pct:c.pct_ftd},
+    {label:'M1 Retention', key:'m1_ret', pct:c.m1_ret},
+    {label:'M2 Retention', key:'m2_ret', pct:c.m2_ret},
+    {label:'Churn Control', key:'churn', pct: c.churn_rate!=null ? (100-c.churn_rate).toFixed(1) : null},
+  ];
+  const scoreHTML = scoreItems.map(s => {
+    const sv = c.scores[s.key]||0;
+    const sc = hc(sv);
+    return `<div class="score-row">
+      <span class="score-row-label">${s.label}</span>
+      <div class="score-row-bar"><div class="score-row-fill" style="width:${sv}%;background:${sc}"></div></div>
+      <span class="score-row-val" style="color:${sc}">${sv}</span>
+    </div>`;
+  }).join('');
+
+  // Funnel
+  const funnelStages = [
+    {l:'Applicants', n:c.applied, col:'#6c8ef5'},
+    {l:'Contract Sent', n:c.contract_sent, col:'#818cf8'},
+    {l:'Signed', n:c.signed_contract, col:'#a78bfa'},
+    {l:'RTD', n:c.rtd, col:'#22c55e'},
+    {l:'FTD', n:c.ftd, col:'#84cc16'},
+  ];
+  const funnelHTML = funnelStages.map(s => {
+    const pct = c.applied > 0 ? Math.round(s.n/c.applied*100) : 0;
+    return `<div class="funnel-stage">
+      <div class="funnel-lbl"><b>${s.l}</b><span>${s.n.toLocaleString()} (${pct}%)</span></div>
+      <div class="funnel-bg"><div class="funnel-fill" style="width:${Math.max(pct,s.n>0?3:0)}%;background:${s.col}">${pct>12?pct+'%':''}</div></div>
+    </div>`;
+  }).join('');
+
+  // Retention cohorts
+  const retHTML = `
+    <div class="cohort-row">
+      <span class="cohort-lbl">M0 Stock</span>
+      <div class="cohort-bar-bg"><div class="cohort-bar-fill" style="width:100%;background:#6c8ef5">${c.m0_stock} couriers</div></div>
+      <span class="cohort-val" style="color:#6c8ef5">new</span>
+    </div>
+    <div class="cohort-row">
+      <span class="cohort-lbl">M1 Retention</span>
+      <div class="cohort-bar-bg"><div class="cohort-bar-fill" style="width:${c.m1_ret??0}%;background:${retColor(c.m1_ret??50)}">${c.m1_ret!=null?c.m1_ret+'%':'—'}</div></div>
+      <span class="cohort-val" style="color:${retColor(c.m1_ret??50)}">${c.m1_size} cx</span>
+    </div>
+    <div class="cohort-row">
+      <span class="cohort-lbl">M2 Retention</span>
+      <div class="cohort-bar-bg"><div class="cohort-bar-fill" style="width:${c.m2_ret??0}%;background:${retColor(c.m2_ret??35)}">${c.m2_ret!=null?c.m2_ret+'%':'—'}</div></div>
+      <span class="cohort-val" style="color:${retColor(c.m2_ret??35)}">${c.m2_size} cx</span>
+    </div>
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:.78rem;color:var(--muted)">
+      <b style="color:var(--text)">Monthly churn</b> (established fleet): 
+      <span style="color:${churnColor(c.churn_rate??20)};font-weight:700">${c.churn_rate??'—'}%</span>
+      &nbsp;·&nbsp; ${c.churned_count} churned, ${c.new_active} new active
+    </div>`;
+
+  document.getElementById('modalGrid').innerHTML = `
+    <div class="modal-section">
+      <h4>Lifecycle Score Breakdown (0–100)</h4>
+      ${scoreHTML}
+      <div style="margin-top:12px;font-size:.75rem;color:var(--muted)">
+        ★ Strongest: <b style="color:var(--green)">${c.strongest}</b><br>
+        ⚠ Weakest: <b style="color:var(--orange)">${c.weakest}</b>
+      </div>
+    </div>
+    <div class="modal-section">
+      <h4>Onboarding Funnel (90d applicants)</h4>
+      ${funnelHTML}
+      <div style="margin-top:8px;font-size:.75rem;color:var(--muted)">
+        Avg days to FTD: <b style="color:var(--text)">${c.avg_days_to_ftd!=null?c.avg_days_to_ftd+'d':'—'}</b>
+        &nbsp;·&nbsp; Active 30d: <b style="color:var(--text)">${(c.active_30d||0).toLocaleString()}</b>
+        &nbsp;·&nbsp; Active 7d: <b style="color:var(--text)">${(c.active_7d||0).toLocaleString()}</b>
+      </div>
+    </div>
+    <div class="modal-section" style="grid-column:1/-1">
+      <h4>Retention Cohorts</h4>
+      ${retHTML}
+    </div>`;
+
+  document.getElementById('modalTreatment').innerHTML = `
+    <div class="modal-treatment">
+      <h4>Recommended CRM Treatment: ${c.treatment}</h4>
+      <p>${c.treatment_detail.why}</p>
+      <ul>${c.treatment_detail.actions.map(a=>`<li>${a}</li>`).join('')}</ul>
+    </div>`;
+
+  document.getElementById('modalOverlay').classList.add('open');
 }
 
-const CHART_OPTS = {
-  responsive: true,
-  maintainAspectRatio: true,
-  plugins: {
-    legend: { labels: { color: '#94a3b8', font: { size: 11 } } },
-    tooltip: { backgroundColor:'#22263a', titleColor:'#e2e8f0', bodyColor:'#94a3b8', borderColor:'#2e3250', borderWidth:1 }
-  },
-  scales: {
-    x: { ticks: { color:'#94a3b8', font:{ size:10 } }, grid: { color:'#2e3250' } },
-    y: { ticks: { color:'#94a3b8', font:{ size:10 } }, grid: { color:'#2e3250' } }
-  }
-};
+function closeModal(e) {
+  if(e.target === document.getElementById('modalOverlay'))
+    document.getElementById('modalOverlay').classList.remove('open');
+}
+function closeModalBtn() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+document.addEventListener('keydown', e => { if(e.key==='Escape') document.getElementById('modalOverlay').classList.remove('open'); });
 
+// ========================================
+// COUNTRIES TAB
+// ========================================
 function renderCountries() {
-  const countries = getFilteredCountries().sort((a,b) => b.health - a.health);
-
-  // Summary stats
-  const totalApplied = countries.reduce((s,c) => s + c.applied, 0);
-  const totalActive = countries.reduce((s,c) => s + c.active_30d, 0);
-  const avgChurn = (countries.reduce((s,c) => s + (c.churn_rate||0), 0) / countries.length).toFixed(1);
+  const cs = getFiltered().sort((a,b)=>b.health-a.health);
+  const totalApplied = cs.reduce((s,c)=>s+c.applied,0);
+  const totalActive  = cs.reduce((s,c)=>s+c.active_30d,0);
+  const avgChurn = (cs.reduce((s,c)=>s+(c.churn_rate||0),0)/cs.length).toFixed(1);
   document.getElementById('summaryStats').innerHTML = `
-    <div class="stat-card"><div class="stat-big">${totalApplied.toLocaleString()}</div><div class="stat-label">Total Applicants (90d)</div></div>
-    <div class="stat-card"><div class="stat-big">${totalActive.toLocaleString()}</div><div class="stat-label">Active Couriers (30d)</div></div>
-    <div class="stat-card"><div class="stat-big">${avgChurn}%</div><div class="stat-label">Avg Monthly Churn</div></div>`;
+    <div class="stat-card"><div class="stat-big">${totalApplied.toLocaleString()}</div><div class="stat-lbl">Total Applicants (90d)</div></div>
+    <div class="stat-card"><div class="stat-big">${totalActive.toLocaleString()}</div><div class="stat-lbl">Active Couriers (30d)</div></div>
+    <div class="stat-card"><div class="stat-big">${avgChurn}%</div><div class="stat-lbl">Avg Monthly Churn</div></div>`;
 
-  // Scatter chart
-  mkChart('scatterChart', {
-    type: 'bubble',
-    data: {
-      datasets: [{
-        label: 'Countries',
-        data: countries.map(c => ({
-          x: c.pct_ftd || 0,
-          y: c.churn_rate || 0,
-          r: Math.max(4, Math.min(20, c.active_30d / 1000)),
-          cc: c.cc, name: c.name
-        })),
-        backgroundColor: countries.map(c => healthColor(c.health) + 'aa'),
-        borderColor: countries.map(c => healthColor(c.health)),
-        borderWidth: 1
-      }]
-    },
-    options: {
-      ...CHART_OPTS,
-      plugins: { ...CHART_OPTS.plugins,
-        tooltip: { ...CHART_OPTS.plugins.tooltip,
-          callbacks: {
-            label: (ctx) => `${ctx.raw.name}: FTD=${ctx.raw.x}% Churn=${ctx.raw.y}%`
-          }
-        }
-      },
-      scales: {
-        x: { ...CHART_OPTS.scales.x, title: { display:true, text:'FTD Activation Rate (%)', color:'#94a3b8' } },
-        y: { ...CHART_OPTS.scales.y, title: { display:true, text:'Monthly Churn Rate (%)', color:'#94a3b8' }, reverse:true }
-      }
+  // Scatter
+  mkChart('scatterChart',{type:'bubble',data:{datasets:[{
+    label:'Countries',
+    data:cs.map(c=>{return{x:c.pct_ftd||0,y:c.churn_rate||0,r:Math.max(4,Math.min(22,c.active_30d/1000)),cc:c.cc,name:c.name}});,
+    backgroundColor:cs.map(c=>hc(c.health)+'99'),
+    borderColor:cs.map(c=>hc(c.health)),borderWidth:1
+  }]},options:opts({
+    plugins:{tooltip:{callbacks:{label:ctx=>`${ctx.raw.name}: FTD=${ctx.raw.x}% Churn=${ctx.raw.y}%`}}},
+    scales:{
+      x:{title:{display:true,text:'FTD Activation Rate (%)',color:'#94a3b8'}},
+      y:{title:{display:true,text:'Monthly Churn Rate (%)',color:'#94a3b8'},reverse:true}
     }
+  })});
+
+  // Health bar (horizontal)
+  mkChart('healthBarChart',{type:'bar',data:{
+    labels:cs.map(c=>c.cc),
+    datasets:[{label:'Health',data:cs.map(c=>c.health),
+      backgroundColor:cs.map(c=>hc(c.health)+'cc'),borderColor:cs.map(c=>hc(c.health)),
+      borderWidth:1,borderRadius:3}]
+  },options:opts({indexAxis:'y',plugins:{legend:{display:false}}})
   });
 
-  // Health bar chart
-  const sorted = [...countries].sort((a,b) => b.health - a.health);
-  mkChart('healthBarChart', {
-    type: 'bar',
-    data: {
-      labels: sorted.map(c => c.cc),
-      datasets: [{
-        label: 'Health Score',
-        data: sorted.map(c => c.health),
-        backgroundColor: sorted.map(c => healthColor(c.health) + 'cc'),
-        borderColor: sorted.map(c => healthColor(c.health)),
-        borderWidth: 1, borderRadius: 4
-      }]
-    },
-    options: { ...CHART_OPTS, indexAxis:'y', plugins: { ...CHART_OPTS.plugins, legend: { display:false } } }
-  });
-
-  // Funnel chart (aggregated)
-  const totApplied = countries.reduce((s,c) => s + c.applied, 0);
-  const totContract = countries.reduce((s,c) => s + c.contract_sent, 0);
-  const totSigned = countries.reduce((s,c) => s + c.signed_contract, 0);
-  const totRTD = countries.reduce((s,c) => s + c.rtd, 0);
-  const totFTD = countries.reduce((s,c) => s + c.ftd, 0);
-  mkChart('funnelChart', {
-    type: 'bar',
-    data: {
-      labels: ['Applicants','Contract Sent','Signed','RTD','FTD'],
-      datasets: [{
-        label: 'Couriers',
-        data: [totApplied, totContract, totSigned, totRTD, totFTD],
-        backgroundColor: ['#6c8ef5cc','#818cf8cc','#a78bfacc','#22c55ecc','#84cc16cc'],
-        borderColor:      ['#6c8ef5','#818cf8','#a78bfa','#22c55e','#84cc16'],
-        borderWidth: 1, borderRadius: 6
-      }]
-    },
-    options: { ...CHART_OPTS, plugins: { ...CHART_OPTS.plugins, legend: { display:false } } }
+  // Funnel aggregated
+  const totA=cs.reduce((s,c)=>s+c.applied,0);
+  const totC=cs.reduce((s,c)=>s+c.contract_sent,0);
+  const totS=cs.reduce((s,c)=>s+c.signed_contract,0);
+  const totR=cs.reduce((s,c)=>s+c.rtd,0);
+  const totF=cs.reduce((s,c)=>s+c.ftd,0);
+  mkChart('funnelAggChart',{type:'bar',data:{
+    labels:['Applicants','Contract Sent','Signed','RTD','FTD'],
+    datasets:[{label:'Couriers',data:[totA,totC,totS,totR,totF],
+      backgroundColor:['#6c8ef5cc','#818cf8cc','#a78bfacc','#22c55ecc','#84cc16cc'],
+      borderColor:['#6c8ef5','#818cf8','#a78bfa','#22c55e','#84cc16'],
+      borderWidth:1,borderRadius:6}]
+  },options:opts({plugins:{legend:{display:false}}})
   });
 }
 
-// ---- Onboarding tab ----
+// ========================================
+// ONBOARDING TAB
+// ========================================
 function renderOnboarding() {
-  const countries = getFilteredCountries().sort((a,b) => b.applied - a.applied);
-
-  // Populate country funnel selector
-  const sel = document.getElementById('funnelCountrySelect');
-  const prevVal = sel.value;
-  sel.innerHTML = countries.map(c => `<option value="${c.cc}">${c.name} (${c.cc})</option>`).join('');
-  if (prevVal && countries.find(c => c.cc === prevVal)) sel.value = prevVal;
+  const cs = getFiltered().sort((a,b)=>b.applied-a.applied);
+  const sel = document.getElementById('funnelSel');
+  const prev = sel.value;
+  sel.innerHTML = cs.map(c=>`<option value="${c.cc}">${c.flag} ${c.name}</option>`).join('');
+  if(prev && cs.find(c=>c.cc===prev)) sel.value=prev;
   renderCountryFunnel();
 
-  // Funnel rates chart (RTD % and FTD % per country)
-  const top20 = countries.slice(0, 20);
-  mkChart('funnelRatesChart', {
-    type: 'bar',
-    data: {
-      labels: top20.map(c => c.cc),
-      datasets: [
-        { label:'RTD Rate %', data: top20.map(c => c.pct_rtd || 0), backgroundColor:'#6c8ef5aa', borderColor:'#6c8ef5', borderWidth:1, borderRadius:3 },
-        { label:'FTD Rate %', data: top20.map(c => c.pct_ftd || 0), backgroundColor:'#22c55eaa', borderColor:'#22c55e', borderWidth:1, borderRadius:3 }
-      ]
-    },
-    options: CHART_OPTS
+  const top20 = cs.slice(0,20);
+  mkChart('funnelRatesChart',{type:'bar',data:{
+    labels:top20.map(c=>c.cc),
+    datasets:[
+      {label:'RTD %',data:top20.map(c=>c.pct_rtd||0),backgroundColor:'#6c8ef5aa',borderColor:'#6c8ef5',borderWidth:1,borderRadius:3},
+      {label:'FTD %',data:top20.map(c=>c.pct_ftd||0),backgroundColor:'#22c55eaa',borderColor:'#22c55e',borderWidth:1,borderRadius:3}
+    ]
+  },options:opts()});
+
+  const wd = cs.filter(c=>c.avg_days_to_ftd!=null).sort((a,b)=>a.avg_days_to_ftd-b.avg_days_to_ftd);
+  mkChart('daysToFtdChart',{type:'bar',data:{
+    labels:wd.map(c=>c.cc),
+    datasets:[{label:'Avg Days',data:wd.map(c=>c.avg_days_to_ftd),
+      backgroundColor:wd.map(c=>c.avg_days_to_ftd>20?'#ef4444aa':c.avg_days_to_ftd>10?'#f59e0baa':'#22c55eaa'),
+      borderColor:wd.map(c=>c.avg_days_to_ftd>20?'#ef4444':c.avg_days_to_ftd>10?'#f59e0b':'#22c55e'),
+      borderWidth:1,borderRadius:4}]
+  },options:opts({plugins:{legend:{display:false}}})
   });
 
-  // Avg days to FTD chart
-  const withDays = countries.filter(c => c.avg_days_to_ftd != null).sort((a,b) => a.avg_days_to_ftd - b.avg_days_to_ftd);
-  mkChart('daysToFtdChart', {
-    type: 'bar',
-    data: {
-      labels: withDays.map(c => c.cc),
-      datasets: [{
-        label:'Avg Days Applied→FTD',
-        data: withDays.map(c => c.avg_days_to_ftd),
-        backgroundColor: withDays.map(c => c.avg_days_to_ftd > 20 ? '#ef4444aa' : c.avg_days_to_ftd > 10 ? '#f59e0baa' : '#22c55eaa'),
-        borderColor: withDays.map(c => c.avg_days_to_ftd > 20 ? '#ef4444' : c.avg_days_to_ftd > 10 ? '#f59e0b' : '#22c55e'),
-        borderWidth: 1, borderRadius: 4
-      }]
-    },
-    options: { ...CHART_OPTS, plugins: { ...CHART_OPTS.plugins, legend: { display:false } } }
-  });
-
-  // Table
-  const tbody = document.getElementById('onboardingBody');
-  tbody.innerHTML = countries.map(c => {
-    const rtdC = (c.pct_rtd||0) >= 30 ? '#22c55e' : (c.pct_rtd||0) >= 15 ? '#f59e0b' : '#ef4444';
-    const ftdC = (c.pct_ftd||0) >= 35 ? '#22c55e' : (c.pct_ftd||0) >= 20 ? '#f59e0b' : '#ef4444';
+  document.getElementById('onboardingBody').innerHTML = cs.map(c=>{
+    const rc=c.pct_rtd>=30?'#22c55e':c.pct_rtd>=15?'#f59e0b':'#ef4444';
+    const fc=c.pct_ftd>=35?'#22c55e':c.pct_ftd>=20?'#f59e0b':'#ef4444';
     return `<tr>
-      <td><b>${c.name}</b> <span style="color:var(--muted);font-size:.75rem">${c.cc}</span></td>
-      <td>${c.applied.toLocaleString()}</td>
-      <td>${c.contract_sent.toLocaleString()}</td>
-      <td>${c.signed_contract.toLocaleString()}</td>
-      <td>${c.rtd.toLocaleString()}</td>
+      <td><b>${c.flag} ${c.name}</b><span style="color:var(--muted);font-size:.72rem"> ${c.cc}</span></td>
+      <td>${c.applied.toLocaleString()}</td><td>${c.contract_sent.toLocaleString()}</td>
+      <td>${c.signed_contract.toLocaleString()}</td><td>${c.rtd.toLocaleString()}</td>
       <td>${c.ftd.toLocaleString()}</td>
-      <td><span style="color:${rtdC};font-weight:600">${c.pct_rtd ?? '—'}%</span></td>
-      <td><span style="color:${ftdC};font-weight:600">${c.pct_ftd ?? '—'}%</span></td>
-      <td>${c.avg_days_to_ftd != null ? c.avg_days_to_ftd + 'd' : '—'}</td>
+      <td><b style="color:${rc}">${c.pct_rtd??'—'}%</b></td>
+      <td><b style="color:${fc}">${c.pct_ftd??'—'}%</b></td>
+      <td>${c.avg_days_to_ftd!=null?c.avg_days_to_ftd+'d':'—'}</td>
     </tr>`;
   }).join('');
 }
 
 function renderCountryFunnel() {
-  const sel = document.getElementById('funnelCountrySelect');
-  const cc = sel.value;
-  const c = RAW[cc];
-  if (!c) return;
-  const stages = [
-    { label:'Applicants', count:c.applied, color:'#6c8ef5' },
-    { label:'Contract Sent', count:c.contract_sent, color:'#818cf8' },
-    { label:'Contract Signed', count:c.signed_contract, color:'#a78bfa' },
-    { label:'RTD', count:c.rtd, color:'#22c55e' },
-    { label:'FTD', count:c.ftd, color:'#84cc16' }
+  const cc = document.getElementById('funnelSel').value;
+  const c = RAW[cc]; if(!c) return;
+  const stages=[
+    {l:'Applicants',n:c.applied,col:'#6c8ef5'},
+    {l:'Contract Sent',n:c.contract_sent,col:'#818cf8'},
+    {l:'Signed',n:c.signed_contract,col:'#a78bfa'},
+    {l:'RTD',n:c.rtd,col:'#22c55e'},
+    {l:'FTD',n:c.ftd,col:'#84cc16'}
   ];
-  const max = c.applied || 1;
-  document.getElementById('countryFunnelViz').innerHTML = stages.map(s => {
-    const pct = Math.round(s.count / max * 100);
-    const convPct = s.count > 0 ? Math.round(s.count / max * 100) : 0;
+  const max=c.applied||1;
+  document.getElementById('countryFunnelViz').innerHTML = stages.map(s=>{
+    const pct=Math.round(s.n/max*100);
     return `<div class="funnel-stage">
-      <div class="funnel-label">
-        <span>${s.label}</span>
-        <span style="color:var(--muted)">${s.count.toLocaleString()} · ${convPct}%</span>
-      </div>
-      <div class="funnel-bar-bg">
-        <div class="funnel-bar-fill" style="width:${pct}%;background:${s.color};min-width:${s.count>0?20:0}px">
-          ${pct >= 10 ? pct + '%' : ''}
-        </div>
-      </div>
+      <div class="funnel-lbl"><b>${s.l}</b><span>${s.n.toLocaleString()} · ${pct}%</span></div>
+      <div class="funnel-bg"><div class="funnel-fill" style="width:${Math.max(pct,s.n>0?3:0)}%;background:${s.col}">${pct>15?pct+'%':''}</div></div>
     </div>`;
   }).join('');
 }
 
-// ---- FTD tab ----
+// ========================================
+// FTD TAB
+// ========================================
 function renderFTD() {
-  const countries = getFilteredCountries().sort((a,b) => (b.pct_ftd||0) - (a.pct_ftd||0));
-  const totalApplied = countries.reduce((s,c) => s + c.applied, 0);
-  const totalActivated = countries.reduce((s,c) => s + c.ftd, 0);
-  const avgDays = (countries.filter(c=>c.avg_days_to_ftd).reduce((s,c) => s + c.avg_days_to_ftd, 0) / countries.filter(c=>c.avg_days_to_ftd).length).toFixed(1);
-  document.getElementById('ftdStats').innerHTML = `
-    <div class="stat-card"><div class="stat-big">${(totalActivated/totalApplied*100).toFixed(1)}%</div><div class="stat-label">Avg FTD Activation Rate</div></div>
-    <div class="stat-card"><div class="stat-big">${totalActivated.toLocaleString()}</div><div class="stat-label">Couriers Activated (90d)</div></div>
-    <div class="stat-card"><div class="stat-big">${avgDays}d</div><div class="stat-label">Avg Days to First Delivery</div></div>`;
+  const cs = getFiltered().sort((a,b)=>(b.pct_ftd||0)-(a.pct_ftd||0));
+  const totA=cs.reduce((s,c)=>s+c.applied,0);
+  const totF=cs.reduce((s,c)=>s+c.ftd,0);
+  const avgD=(cs.filter(c=>c.avg_days_to_ftd).reduce((s,c)=>s+c.avg_days_to_ftd,0)/cs.filter(c=>c.avg_days_to_ftd).length).toFixed(1);
+  document.getElementById('ftdStats').innerHTML=`
+    <div class="stat-card"><div class="stat-big">${(totF/totA*100).toFixed(1)}%</div><div class="stat-lbl">Avg Activation Rate</div></div>
+    <div class="stat-card"><div class="stat-big">${totF.toLocaleString()}</div><div class="stat-lbl">Couriers Activated (90d)</div></div>
+    <div class="stat-card"><div class="stat-big">${avgD}d</div><div class="stat-lbl">Avg Days to FTD</div></div>`;
 
-  mkChart('ftdRateChart', {
-    type: 'bar',
-    data: {
-      labels: countries.map(c => c.cc),
-      datasets: [{
-        label:'FTD Rate %',
-        data: countries.map(c => c.pct_ftd || 0),
-        backgroundColor: countries.map(c => healthColor(c.scores.activation) + 'bb'),
-        borderColor: countries.map(c => healthColor(c.scores.activation)),
-        borderWidth:1, borderRadius:4
-      }]
-    },
-    options: { ...CHART_OPTS, plugins: { ...CHART_OPTS.plugins, legend: { display:false } } }
+  mkChart('ftdRateChart',{type:'bar',data:{
+    labels:cs.map(c=>c.cc),
+    datasets:[{label:'FTD Rate %',data:cs.map(c=>c.pct_ftd||0),
+      backgroundColor:cs.map(c=>hc(c.scores.activation)+'bb'),
+      borderColor:cs.map(c=>hc(c.scores.activation)),borderWidth:1,borderRadius:4}]
+  },options:opts({plugins:{legend:{display:false}}})
   });
-
-  mkChart('ftdVolumeChart', {
-    type:'bar',
-    data:{
-      labels: countries.map(c => c.cc),
-      datasets:[
-        { label:'Applicants', data: countries.map(c => c.applied), backgroundColor:'#6c8ef544', borderColor:'#6c8ef5', borderWidth:1, borderRadius:3 },
-        { label:'Activated (FTD)', data: countries.map(c => c.ftd), backgroundColor:'#22c55eaa', borderColor:'#22c55e', borderWidth:1, borderRadius:3 }
-      ]
-    },
-    options: CHART_OPTS
-  });
-
-  const withDays = countries.filter(c => c.avg_days_to_ftd != null).sort((a,b) => a.avg_days_to_ftd - b.avg_days_to_ftd);
-  mkChart('ftdDaysChart', {
-    type:'bar',
-    data:{
-      labels: withDays.map(c => c.cc),
-      datasets:[{
-        label:'Avg Days', data: withDays.map(c => c.avg_days_to_ftd),
-        backgroundColor: withDays.map(c => c.avg_days_to_ftd > 20 ? '#ef4444aa' : c.avg_days_to_ftd > 10 ? '#f59e0baa' : '#22c55eaa'),
-        borderColor: withDays.map(c => c.avg_days_to_ftd > 20 ? '#ef4444' : c.avg_days_to_ftd > 10 ? '#f59e0b' : '#22c55e'),
-        borderWidth:1, borderRadius:4
-      }]
-    },
-    options: { ...CHART_OPTS, plugins: { ...CHART_OPTS.plugins, legend: { display:false } } }
+  mkChart('ftdVolumeChart',{type:'bar',data:{
+    labels:cs.map(c=>c.cc),
+    datasets:[
+      {label:'Applicants',data:cs.map(c=>c.applied),backgroundColor:'#6c8ef544',borderColor:'#6c8ef5',borderWidth:1,borderRadius:3},
+      {label:'Activated',data:cs.map(c=>c.ftd),backgroundColor:'#22c55eaa',borderColor:'#22c55e',borderWidth:1,borderRadius:3}
+    ]
+  },options:opts()});
+  const wd=cs.filter(c=>c.avg_days_to_ftd!=null).sort((a,b)=>a.avg_days_to_ftd-b.avg_days_to_ftd);
+  mkChart('ftdDaysChart',{type:'bar',data:{
+    labels:wd.map(c=>c.cc),
+    datasets:[{label:'Avg Days',data:wd.map(c=>c.avg_days_to_ftd),
+      backgroundColor:wd.map(c=>c.avg_days_to_ftd>20?'#ef4444aa':c.avg_days_to_ftd>10?'#f59e0baa':'#22c55eaa'),
+      borderColor:wd.map(c=>c.avg_days_to_ftd>20?'#ef4444':c.avg_days_to_ftd>10?'#f59e0b':'#22c55e'),
+      borderWidth:1,borderRadius:4}]
+  },options:opts({plugins:{legend:{display:false}}})
   });
 }
 
-// ---- Nurture tab ----
+// ========================================
+// NURTURE TAB
+// ========================================
 function renderNurture() {
-  const countries = getFilteredCountries().sort((a,b) => b.active_30d - a.active_30d);
-  const totalActive30 = countries.reduce((s,c) => s + c.active_30d, 0);
-  const totalActive7 = countries.reduce((s,c) => s + c.active_7d, 0);
-  const avgDeliveries = (countries.filter(c=>c.avg_deliveries_per_courier).reduce((s,c)=>s+c.avg_deliveries_per_courier,0)/countries.filter(c=>c.avg_deliveries_per_courier).length).toFixed(1);
-  document.getElementById('nurtureStats').innerHTML = `
-    <div class="stat-card"><div class="stat-big">${totalActive30.toLocaleString()}</div><div class="stat-label">Active Couriers (30d)</div></div>
-    <div class="stat-card"><div class="stat-big">${totalActive7.toLocaleString()}</div><div class="stat-label">Active Couriers (7d)</div></div>
-    <div class="stat-card"><div class="stat-big">${avgDeliveries}</div><div class="stat-label">Avg Deliveries / Courier (30d)</div></div>`;
+  const cs = getFiltered().sort((a,b)=>b.active_30d-a.active_30d);
+  const t30=cs.reduce((s,c)=>s+c.active_30d,0);
+  const t7=cs.reduce((s,c)=>s+c.active_7d,0);
+  const avgDel=(cs.filter(c=>c.avg_deliveries).reduce((s,c)=>s+c.avg_deliveries,0)/cs.filter(c=>c.avg_deliveries).length).toFixed(1);
+  document.getElementById('nurtureStats').innerHTML=`
+    <div class="stat-card"><div class="stat-big">${t30.toLocaleString()}</div><div class="stat-lbl">Active Couriers (30d)</div></div>
+    <div class="stat-card"><div class="stat-big">${t7.toLocaleString()}</div><div class="stat-lbl">Active Couriers (7d)</div></div>
+    <div class="stat-card"><div class="stat-big">${avgDel}</div><div class="stat-lbl">Avg Deliveries / Courier</div></div>`;
 
-  mkChart('active30dChart', {
-    type:'bar',
-    data:{
-      labels: countries.map(c => c.cc),
-      datasets:[{
-        label:'Active 30d', data: countries.map(c => c.active_30d),
-        backgroundColor:'#6c8ef5aa', borderColor:'#6c8ef5', borderWidth:1, borderRadius:4
-      }]
-    },
-    options: { ...CHART_OPTS, plugins: { ...CHART_OPTS.plugins, legend: { display:false } } }
+  mkChart('active30dChart',{type:'bar',data:{
+    labels:cs.map(c=>c.cc),
+    datasets:[{label:'Active 30d',data:cs.map(c=>c.active_30d),backgroundColor:'#6c8ef5aa',borderColor:'#6c8ef5',borderWidth:1,borderRadius:4}]
+  },options:opts({plugins:{legend:{display:false}}})
   });
-
-  const sortedW7 = [...countries].filter(c=>c.w7_retention).sort((a,b) => b.w7_retention - a.w7_retention);
-  mkChart('w7RetentionChart', {
-    type:'bar',
-    data:{
-      labels: sortedW7.map(c => c.cc),
-      datasets:[{
-        label:'7d Retention %', data: sortedW7.map(c => c.w7_retention),
-        backgroundColor: sortedW7.map(c => c.w7_retention >= 60 ? '#22c55eaa' : c.w7_retention >= 45 ? '#f59e0baa' : '#ef4444aa'),
-        borderColor: sortedW7.map(c => c.w7_retention >= 60 ? '#22c55e' : c.w7_retention >= 45 ? '#f59e0b' : '#ef4444'),
-        borderWidth:1, borderRadius:4
-      }]
-    },
-    options: { ...CHART_OPTS, plugins: { ...CHART_OPTS.plugins, legend: { display:false } } }
+  const sw=cs.filter(c=>c.w7_retention).sort((a,b)=>b.w7_retention-a.w7_retention);
+  mkChart('w7Chart',{type:'bar',data:{
+    labels:sw.map(c=>c.cc),
+    datasets:[{label:'7d Retention %',data:sw.map(c=>c.w7_retention),
+      backgroundColor:sw.map(c=>retColor(c.w7_retention)+'aa'),borderColor:sw.map(c=>retColor(c.w7_retention)),borderWidth:1,borderRadius:4}]
+  },options:opts({plugins:{legend:{display:false}}})
   });
-
-  const sortedDel = [...countries].filter(c=>c.avg_deliveries_per_courier).sort((a,b) => b.avg_deliveries_per_courier - a.avg_deliveries_per_courier);
-  mkChart('deliveriesPerCourierChart', {
-    type:'bar',
-    data:{
-      labels: sortedDel.map(c => c.cc),
-      datasets:[{
-        label:'Avg Deliveries', data: sortedDel.map(c => c.avg_deliveries_per_courier),
-        backgroundColor:'#a78bfaaa', borderColor:'#a78bfa', borderWidth:1, borderRadius:4
-      }]
-    },
-    options: { ...CHART_OPTS, plugins: { ...CHART_OPTS.plugins, legend: { display:false } } }
+  const sd=cs.filter(c=>c.avg_deliveries).sort((a,b)=>b.avg_deliveries-a.avg_deliveries);
+  mkChart('delPerCourierChart',{type:'bar',data:{
+    labels:sd.map(c=>c.cc),
+    datasets:[{label:'Avg Deliveries',data:sd.map(c=>c.avg_deliveries),backgroundColor:'#a78bfaaa',borderColor:'#a78bfa',borderWidth:1,borderRadius:4}]
+  },options:opts({plugins:{legend:{display:false}}})
   });
 }
 
-// ---- Retention tab ----
+// ========================================
+// RETENTION TAB
+// ========================================
 function renderRetention() {
-  const countries = getFilteredCountries().sort((a,b) => (b.churn_rate||0) - (a.churn_rate||0));
-  const totalChurned = countries.reduce((s,c) => s + c.churned_count, 0);
-  const totalNewActive = countries.reduce((s,c) => s + c.new_active_couriers, 0);
-  const avgChurn = (countries.reduce((s,c) => s + (c.churn_rate||0), 0) / countries.length).toFixed(1);
-  document.getElementById('retentionStats').innerHTML = `
-    <div class="stat-card"><div class="stat-big" style="color:#ef4444">${totalChurned.toLocaleString()}</div><div class="stat-label">Churned Couriers (30d)</div></div>
-    <div class="stat-card"><div class="stat-big" style="color:#22c55e">${totalNewActive.toLocaleString()}</div><div class="stat-label">New Active Couriers (30d)</div></div>
-    <div class="stat-card"><div class="stat-big">${avgChurn}%</div><div class="stat-label">Avg Monthly Churn Rate</div></div>`;
+  const cs = getFiltered().sort((a,b)=>(b.churn_rate||0)-(a.churn_rate||0));
+  const totChurned=cs.reduce((s,c)=>s+c.churned_count,0);
+  const totNew=cs.reduce((s,c)=>s+c.new_active,0);
+  const totM0=cs.reduce((s,c)=>s+c.m0_stock,0);
+  document.getElementById('retentionStats').innerHTML=`
+    <div class="stat-card"><div class="stat-big" style="color:#6c8ef5">${totM0.toLocaleString()}</div><div class="stat-lbl">M0 Stock (new couriers in month 1)</div></div>
+    <div class="stat-card"><div class="stat-big" style="color:#ef4444">${totChurned.toLocaleString()}</div><div class="stat-lbl">Churned Couriers (30d)</div></div>
+    <div class="stat-card"><div class="stat-big" style="color:#22c55e">${totNew.toLocaleString()}</div><div class="stat-lbl">New Active Couriers (30d)</div></div>`;
 
-  mkChart('churnRateChart', {
-    type:'bar',
-    data:{
-      labels: countries.map(c => c.cc),
-      datasets:[{
-        label:'Churn Rate %', data: countries.map(c => c.churn_rate || 0),
-        backgroundColor: countries.map(c => (c.churn_rate||0) > 25 ? '#ef4444aa' : (c.churn_rate||0) > 15 ? '#f59e0baa' : '#22c55eaa'),
-        borderColor: countries.map(c => (c.churn_rate||0) > 25 ? '#ef4444' : (c.churn_rate||0) > 15 ? '#f59e0b' : '#22c55e'),
-        borderWidth:1, borderRadius:4
-      }]
-    },
-    options: { ...CHART_OPTS, plugins: { ...CHART_OPTS.plugins, legend: { display:false } } }
+  // M1 retention chart
+  const sm1=cs.filter(c=>c.m1_ret!=null).sort((a,b)=>b.m1_ret-a.m1_ret);
+  mkChart('m1RetChart',{type:'bar',data:{
+    labels:sm1.map(c=>c.cc),
+    datasets:[{label:'M1 Retention %',data:sm1.map(c=>c.m1_ret),
+      backgroundColor:sm1.map(c=>retColor(c.m1_ret)+'aa'),borderColor:sm1.map(c=>retColor(c.m1_ret)),borderWidth:1,borderRadius:4}]
+  },options:opts({plugins:{legend:{display:false}}})
   });
 
-  mkChart('churnVsNewChart', {
-    type:'bar',
-    data:{
-      labels: countries.map(c => c.cc),
-      datasets:[
-        { label:'Churned', data: countries.map(c => c.churned_count), backgroundColor:'#ef444488', borderColor:'#ef4444', borderWidth:1, borderRadius:3 },
-        { label:'New Active', data: countries.map(c => c.new_active_couriers), backgroundColor:'#22c55e88', borderColor:'#22c55e', borderWidth:1, borderRadius:3 }
-      ]
-    },
-    options: CHART_OPTS
+  // M2 retention chart
+  const sm2=cs.filter(c=>c.m2_ret!=null).sort((a,b)=>b.m2_ret-a.m2_ret);
+  mkChart('m2RetChart',{type:'bar',data:{
+    labels:sm2.map(c=>c.cc),
+    datasets:[{label:'M2 Retention %',data:sm2.map(c=>c.m2_ret),
+      backgroundColor:sm2.map(c=>retColor(c.m2_ret)+'aa'),borderColor:sm2.map(c=>retColor(c.m2_ret)),borderWidth:1,borderRadius:4}]
+  },options:opts({plugins:{legend:{display:false}}})
   });
 
-  const tbody = document.getElementById('retentionBody');
-  tbody.innerHTML = countries.map(c => {
-    const churnC = (c.churn_rate||0) > 25 ? '#ef4444' : (c.churn_rate||0) > 15 ? '#f59e0b' : '#22c55e';
-    const net = c.new_active_couriers - c.churned_count;
-    const netC = net >= 0 ? '#22c55e' : '#ef4444';
+  // M0 stock chart
+  const sm0=cs.filter(c=>c.m0_stock>0).sort((a,b)=>b.m0_stock-a.m0_stock);
+  mkChart('m0StockChart',{type:'bar',data:{
+    labels:sm0.map(c=>c.cc),
+    datasets:[{label:'M0 Stock',data:sm0.map(c=>c.m0_stock),backgroundColor:'#6c8ef5aa',borderColor:'#6c8ef5',borderWidth:1,borderRadius:4}]
+  },options:opts({plugins:{legend:{display:false}}})
+  });
+
+  // Churn rate
+  mkChart('churnRateChart',{type:'bar',data:{
+    labels:cs.map(c=>c.cc),
+    datasets:[{label:'Churn %',data:cs.map(c=>c.churn_rate||0),
+      backgroundColor:cs.map(c=>churnColor(c.churn_rate||20)+'aa'),borderColor:cs.map(c=>churnColor(c.churn_rate||20)),borderWidth:1,borderRadius:4}]
+  },options:opts({plugins:{legend:{display:false}}})
+  });
+
+  // M1 vs M2 comparison
+  const both=cs.filter(c=>c.m1_ret!=null&&c.m2_ret!=null).sort((a,b)=>b.m1_ret-a.m1_ret);
+  mkChart('m1m2CompareChart',{type:'bar',data:{
+    labels:both.map(c=>c.cc),
+    datasets:[
+      {label:'M1 Retention %',data:both.map(c=>c.m1_ret),backgroundColor:'#6c8ef5aa',borderColor:'#6c8ef5',borderWidth:1,borderRadius:3},
+      {label:'M2 Retention %',data:both.map(c=>c.m2_ret),backgroundColor:'#a78bfaaa',borderColor:'#a78bfa',borderWidth:1,borderRadius:3}
+    ]
+  },options:opts()});
+
+  // Churned vs new
+  mkChart('churnVsNewChart',{type:'bar',data:{
+    labels:cs.map(c=>c.cc),
+    datasets:[
+      {label:'Churned',data:cs.map(c=>c.churned_count),backgroundColor:'#ef444488',borderColor:'#ef4444',borderWidth:1,borderRadius:3},
+      {label:'New Active',data:cs.map(c=>c.new_active),backgroundColor:'#22c55e88',borderColor:'#22c55e',borderWidth:1,borderRadius:3}
+    ]
+  },options:opts()});
+
+  // Table
+  document.getElementById('retentionBody').innerHTML = cs.map(c=>{
+    const cc=churnColor(c.churn_rate||20);
+    const net=c.new_active-c.churned_count;
+    const nc=net>=0?'#22c55e':'#ef4444';
+    const g=gc(c.grade);
     return `<tr>
-      <td><b>${c.name}</b> <span style="color:var(--muted);font-size:.75rem">${c.cc}</span></td>
+      <td><b>${c.flag} ${c.name}</b><span style="color:var(--muted);font-size:.72rem"> ${c.cc}</span></td>
+      <td style="color:#6c8ef5;font-weight:600">${c.m0_stock}</td>
+      <td>${c.m1_size}</td>
+      <td><b style="color:${retColor(c.m1_ret??50)}">${c.m1_ret!=null?c.m1_ret+'%':'—'}</b></td>
+      <td>${c.m2_size}</td>
+      <td><b style="color:${retColor(c.m2_ret??35)}">${c.m2_ret!=null?c.m2_ret+'%':'—'}</b></td>
       <td>${c.prev_active.toLocaleString()}</td>
-      <td>${(c.active_30d||0).toLocaleString()}</td>
-      <td style="color:#ef4444">${c.churned_count.toLocaleString()}</td>
-      <td style="color:#22c55e">${c.new_active_couriers.toLocaleString()}</td>
-      <td><span style="color:${churnC};font-weight:600">${c.churn_rate ?? '—'}%</span></td>
-      <td style="color:${netC};font-weight:600">${net >= 0 ? '+' : ''}${net.toLocaleString()}</td>
-      <td><span class="grade-badge" style="background:${gradeColor(c.grade)}22;color:${gradeColor(c.grade)}">${c.grade} ${c.health}</span></td>
+      <td style="color:#ef4444">${c.churned_count}</td>
+      <td style="color:#22c55e">${c.new_active}</td>
+      <td><b style="color:${cc}">${c.churn_rate??'—'}%</b></td>
+      <td><span style="background:${g}22;color:${g};padding:2px 8px;border-radius:5px;font-size:.72rem;font-weight:700">${c.grade} ${c.health}</span></td>
     </tr>`;
   }).join('');
 }
 
-// ---- Master render ----
+// ========================================
+// Master render
+// ========================================
 function renderAll() {
   const active = document.querySelector('.pane.active');
-  if (!active) return;
-  const id = active.id.replace('tab-', '');
-  if (id === 'global') renderGlobal();
-  else if (id === 'countries') renderCountries();
-  else if (id === 'onboarding') renderOnboarding();
-  else if (id === 'ftd') renderFTD();
-  else if (id === 'nurture') renderNurture();
-  else if (id === 'retention') renderRetention();
+  if(!active) return;
+  const id = active.id.replace('tab-','');
+  if(id==='global') renderGlobal();
+  else if(id==='countries') renderCountries();
+  else if(id==='onboarding') renderOnboarding();
+  else if(id==='ftd') renderFTD();
+  else if(id==='nurture') renderNurture();
+  else if(id==='retention') renderRetention();
 }
 
-// Init
 renderGlobal();
 </script>
 </body>
